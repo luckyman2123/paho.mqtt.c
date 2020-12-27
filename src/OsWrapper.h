@@ -26,6 +26,7 @@
 typedef unsigned long useconds_t;
 void usleep(useconds_t useconds);
 
+// comment by Clark:: 这个逻辑比较好  ::2020-12-26
 #define timersub(a, b, result) \
 	do \
 	{ \

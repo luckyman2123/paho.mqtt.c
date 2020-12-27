@@ -141,6 +141,8 @@ int Log_initialize(Log_nameValue* info)
 		goto exit;
 	trace_queue_size = trace_settings.max_trace_entries;
 
+	// comment by Clark:: 这个是通过 export 环境变量来确定要不要加载  ::2020-12-26
+	// comment by Clark:: 日志有备份文件, 加后缀.0  ::2020-12-26
 	if ((envval = getenv("MQTT_C_CLIENT_TRACE")) != NULL && strlen(envval) > 0)
 	{
 		if (strcmp(envval, "ON") == 0 || (trace_destination = fopen(envval, "w")) == NULL)
@@ -166,13 +168,15 @@ int Log_initialize(Log_nameValue* info)
 				trace_destination_backup_name[namelen-1] = '\0';
 		}
 	}
+	
+	// comment by Clark:: 日志文件每个文件最大有多少行  ::2020-12-26
 	if ((envval = getenv("MQTT_C_CLIENT_TRACE_MAX_LINES")) != NULL && strlen(envval) > 0)
 	{
 		max_lines_per_file = atoi(envval);
 		if (max_lines_per_file <= 0)
-			max_lines_per_file = 1000;
+			max_lines_per_file = 1000;			// comment by Clark:: 有一个默认值  ::2020-12-26
 	}
-	if ((envval = getenv("MQTT_C_CLIENT_TRACE_LEVEL")) != NULL && strlen(envval) > 0)
+	if ((envval = getenv("MQTT_C_CLIENT_TRACE_LEVEL")) != NULL && strlen(envval) > 0)// comment by Clark:: 不为空, 日志等级  ::2020-12-26
 	{
 		if (strcmp(envval, "MAXIMUM") == 0 || strcmp(envval, "TRACE_MAXIMUM") == 0)
 			trace_settings.trace_level = TRACE_MAXIMUM;
@@ -187,6 +191,8 @@ int Log_initialize(Log_nameValue* info)
 	}
 	Log_output(TRACE_MINIMUM, "=========================================================");
 	Log_output(TRACE_MINIMUM, "                   Trace Output");
+
+	// comment by Clark:: 打印出版本信息:  MQTTAsync_getVersionInfo ::2020-12-26
 	if (info)
 	{
 		while (info->name)
@@ -201,7 +207,7 @@ int Log_initialize(Log_nameValue* info)
 	{
 		FILE* vfile;
 
-		if ((vfile = fopen("/proc/version", "r")) != NULL)
+		if ((vfile = fopen("/proc/version", "r")) != NULL)			// comment by Clark:: 打印内核中的内容做什么  ::2020-12-26
 		{
 			int len;
 
@@ -264,8 +270,10 @@ static traceEntry* Log_pretrace(void)
 	traceEntry *cur_entry = NULL;
 
 	/* calling ftime/gettimeofday seems to be comparatively expensive, so we need to limit its use */
+	// comment by Clark:: 减少gettimeofday的调用, 20次才真正调用一次  ::2020-12-26
 	if (++sametime_count % 20 == 0)
 	{
+	// comment by Clark:: gettimeofday 使用C语言编写程序需要获得当前精确时间（1970年1月1日到现在的时间） ::2020-12-26
 #if defined(GETTIMEOFDAY)
 		gettimeofday(&now_ts, NULL);
 		if (now_ts.tv_sec != last_ts.tv_sec || now_ts.tv_usec != last_ts.tv_usec)
@@ -275,7 +283,7 @@ static traceEntry* Log_pretrace(void)
 #endif
 		{
 			sametime_count = 0;
-			last_ts = now_ts;
+			last_ts = now_ts;			
 		}
 	}
 
@@ -311,7 +319,7 @@ static traceEntry* Log_pretrace(void)
 exit:
 	return cur_entry;
 }
-
+// comment by Clark:: 格式化日志  ::2020-12-26
 static char* Log_formatTraceEntry(traceEntry* cur_entry)
 {
 	struct tm *timeinfo;
@@ -348,7 +356,7 @@ static char* Log_formatTraceEntry(traceEntry* cur_entry)
 	return msg_buf;
 }
 
-
+// comment by Clark:: 利用重定向技术  ::2020-12-26
 static void Log_output(enum LOG_LEVELS log_level, const char *msg)
 {
 	if (trace_destination)
@@ -396,10 +404,10 @@ static void Log_trace(enum LOG_LEVELS log_level, const char *buf)
 	if (trace_queue == NULL)
 		return;
 
-	cur_entry = Log_pretrace();
+	cur_entry = Log_pretrace();// comment by Clark:: 得到一个未使用的 entry, 取名字有讲究 pretrace, posttrace  ::2020-12-26
 
 	memcpy(&(cur_entry->ts), &now_ts, sizeof(now_ts));
-	cur_entry->sametime_count = sametime_count;
+	cur_entry->sametime_count = sametime_count;		// comment by Clark:: 减少了gettimeofday的调用, 通过此数据来区分相同的时间  ::2020-12-26
 
 	cur_entry->has_rc = 2;
 	strncpy(cur_entry->name, buf, sizeof(cur_entry->name));
@@ -427,7 +435,7 @@ void Log(enum LOG_LEVELS log_level, int msgno, const char *format, ...)
 
 		/* we're using a static character buffer, so we need to make sure only one thread uses it at a time */
 		Thread_lock_mutex(log_mutex);
-		if (format == NULL && (temp = Messages_get(msgno, log_level)) != NULL)
+		if (format == NULL && (temp = Messages_get(msgno, log_level)) != NULL)// comment by Clark:: 若未指定打印格式，则根据 消息的id号，获取默认的打印格式  ::2020-12-26
 			format = temp;
 
 		va_start(args, format);

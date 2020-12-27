@@ -106,6 +106,7 @@ DIFF_TIME_TYPE MQTTTime_difftime(START_TIME_TYPE new, START_TIME_TYPE old)
 #endif
 
 
+// comment by Clark:: elapse: ÏûÊÅ, ¹ýÈ¥  ::2020-12-26
 ELAPSED_TIME_TYPE MQTTTime_elapsed(START_TIME_TYPE milliseconds)
 {
 	return (ELAPSED_TIME_TYPE)MQTTTime_difftime(MQTTTime_now(), milliseconds);

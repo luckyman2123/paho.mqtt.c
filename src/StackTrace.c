@@ -54,7 +54,7 @@ typedef struct
 {
 	thread_id_type id;
 	int maxdepth;
-	int current_depth;
+	int current_depth;			// comment by Clark:: 同一个线程调用的深度         ::2020-12-26
 	stackEntry callstack[MAX_STACK_DEPTH];
 } threadEntry;
 
@@ -83,16 +83,16 @@ int setStack(int create)
 	thread_id_type curid = Thread_getid();
 
 	my_thread = NULL;
-	for (i = 0; i < MAX_THREADS && i < thread_count; ++i)
+	for (i = 0; i < MAX_THREADS && i < thread_count; ++i)   // comment by Clark:: 当前有多少线程  ::2020-12-26
 	{
-		if (threads[i].id == curid)
+		if (threads[i].id == curid)								// comment by Clark::  存在的话，就从数组中以出当前线程的相关打印信息                         ::2020-12-26
 		{
 			my_thread = &threads[i];
 			break;
 		}
 	}
 
-	if (my_thread == NULL && create && thread_count < MAX_THREADS)
+	if (my_thread == NULL && create && thread_count < MAX_THREADS)			// comment by Clark:: 若没有且指定创建, 则占用一个, 并初始化自身   ::2020-12-26
 	{
 		my_thread = &threads[thread_count];
 		my_thread->id = curid;
@@ -108,13 +108,15 @@ void StackTrace_entry(const char* name, int line, enum LOG_LEVELS trace_level)
 	Thread_lock_mutex(stack_mutex);
 	if (!setStack(1))
 		goto exit;
-	if (trace_level != -1)
+	if (trace_level != -1)// comment by Clark:: 这个是实时打印的  ::2020-12-26
 		Log_stackTrace(trace_level, 9, (int)my_thread->id, my_thread->current_depth, name, line, NULL);
+
+	// comment by Clark:: 这个是备份, 为回溯做准备的  ::2020-12-26
 	strncpy(my_thread->callstack[my_thread->current_depth].name, name, sizeof(my_thread->callstack[0].name)-1);
 	my_thread->callstack[(my_thread->current_depth)++].line = line;
-	if (my_thread->current_depth > my_thread->maxdepth)
+	if (my_thread->current_depth > my_thread->maxdepth)			// comment by Clark:: 一个线程当前的打印深度, 超过以往的打印最深度, 则重新刷新 达到过的maxdepth  ::2020-12-26
 		my_thread->maxdepth = my_thread->current_depth;
-	if (my_thread->current_depth >= MAX_STACK_DEPTH)
+	if (my_thread->current_depth >= MAX_STACK_DEPTH)			// comment by Clark:: 当线程达到的最深度超过了最大的深度时，则报错  ::2020-12-26
 		Log(LOG_FATAL, -1, "Max stack depth exceeded");
 exit:
 	Thread_unlock_mutex(stack_mutex);
@@ -128,7 +130,8 @@ void StackTrace_exit(const char* name, int line, void* rc, enum LOG_LEVELS trace
 		goto exit;
 	if (--(my_thread->current_depth) < 0)
 		Log(LOG_FATAL, -1, "Minimum stack depth exceeded for thread %lu", my_thread->id);
-	if (strncmp(my_thread->callstack[my_thread->current_depth].name, name, sizeof(my_thread->callstack[0].name)-1) != 0)
+	// comment by Clark:: 同一个函数有进就会有出, 所以 entry 与 exit 要成对使用   ::2020-12-26
+	if (strncmp(my_thread->callstack[my_thread->current_depth].name, name, sizeof(my_thread->callstack[0].name)-1) != 0)  
 		Log(LOG_FATAL, -1, "Stack mismatch. Entry:%s Exit:%s\n", my_thread->callstack[my_thread->current_depth].name, name);
 	if (trace_level != -1)
 	{
@@ -141,7 +144,7 @@ exit:
 	Thread_unlock_mutex(stack_mutex);
 }
 
-
+// comment by Clark:: 打印所有线程的所有回溯  ::2020-12-26
 void StackTrace_printStack(FILE* dest)
 {
 	FILE* file = stdout;

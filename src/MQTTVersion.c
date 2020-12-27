@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 #define snprintf _snprintf
 #else
-#include <dlfcn.h>
+#include <dlfcn.h>			// comment by Clark:: https://pubs.opengroup.org/onlinepubs/7908799/xsh/dlfcn.h.html  ::2020-12-26
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
@@ -126,7 +126,7 @@ int printVersionInfo(MQTTAsync_nameValue* info)
 	while (info->name)
 	{
 		printf("%s: %s\n", info->name, info->value);
-		info++;
+		info++;				// comment by Clark:: 结构体指针 +1       ::2020-12-26
 		rc = 1;  /* at least one value printed */
 	}
 	return rc;
@@ -134,6 +134,8 @@ int printVersionInfo(MQTTAsync_nameValue* info)
 
 typedef MQTTAsync_nameValue* (*func_type)(void);
 
+
+// comment by Clark:: dlsym: obtain the address of a symbol from a dlopen() object  ::2020-12-26
 int loadandcall(const char* libname)
 {
 	int rc = 0;
@@ -191,7 +193,7 @@ int main(int argc, char** argv)
 	printf("MQTTVersion: print the version strings of an MQTT client library\n"); 
 	printf("Copyright (c) 2012, 2018 IBM Corp.\n");
 	
-	if (argc == 1)
+	if (argc == 1)				// comment by Clark:: 当只有一个参数的时候, 打印全部的动态库相关信息  ::2020-12-26
 	{
 		int i = 0;
 		char namebuf[60];

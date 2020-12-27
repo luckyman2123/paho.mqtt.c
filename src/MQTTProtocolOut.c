@@ -53,6 +53,7 @@ extern ClientStates* bstate;
  */
 size_t MQTTProtocol_addressPort(const char* uri, int* port, const char **topic, int default_port)
 {
+	// comment by Clark:: 逆向解析  ::2020-12-26
 	char* colon_pos = strrchr(uri, ':'); /* reverse find to allow for ':' in IPv6 addresses */
 	char* buf = (char*)uri;
 	size_t len;
@@ -94,6 +95,7 @@ size_t MQTTProtocol_addressPort(const char* uri, int* port, const char **topic, 
 }
 
 
+// comment by Clark:: hexadecimal  英 [,heks?'des?m(?)l]  美 [,h?ks?'d?s?ml]  adj. 十六进制的  n. 十六进制 ::2020-12-26
 /**
  * Allow user or password characters to be expressed in the form of %XX, XX being the
  * hexadecimal value of the character. This will avoid problems when a user code or a password

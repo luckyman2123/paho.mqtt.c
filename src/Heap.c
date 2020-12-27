@@ -88,6 +88,7 @@ static int Internal_heap_unlink(char* file, int line, void* p);
 static void HeapScan(enum LOG_LEVELS log_level);
 
 
+// comment by Clark:: hit: 碰到 weird: 怪异的  apart from:　除...之外 heap_roundup: 将size 变为 4 的整数倍 ::2020-12-27
 /**
  * Round allocation size up to a multiple of the size of an int.  Apart from possibly reducing fragmentation,
  * on the old v3 gcc compilers I was hitting some weird behaviour, which might have been errors in
@@ -113,11 +114,11 @@ static size_t Heap_roundup(size_t size)
  */
 static int ptrCompare(void* a, void* b, int value)
 {
-	a = ((storageElement*)a)->ptr;
+	a = ((storageElement*)a)->ptr;			// comment by Clark:: 节省变量，用原来的变量  ::2020-12-27
 	if (value)
 		b = ((storageElement*)b)->ptr;
 
-	return (a > b) ? -1 : (a == b) ? 0 : 1;
+	return (a > b) ? -1 : (a == b) ? 0 : 1;		// comment by Clark:: 精简  ::2020-12-27
 }
 
 /*
@@ -155,7 +156,7 @@ static void Heap_check(char* string, void* ptr)
  * @param size the size of the item to be allocated
  * @return pointer to the allocated item, or NULL if there was an error
  */
-void* mymalloc(char* file, int line, size_t size)
+void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file都指 tree.c , 这有意思么  ::2020-12-27
 {
 	storageElement* s = NULL;
 	size_t space = sizeof(storageElement);
@@ -180,7 +181,7 @@ void* mymalloc(char* file, int line, size_t size)
 	}
 	memset(s->file, 0, sizeof(filenamelen));
 
-	space += filenamelen;
+	space += filenamelen;			// comment by Clark:: 记录空间大小  ::2020-12-27
 	strcpy(s->file, file);
 #if defined(HEAP_STACK)
 #define STACK_LEN 300
@@ -205,14 +206,16 @@ void* mymalloc(char* file, int line, size_t size)
 	}
 	memset(s->ptr, 0, size + 2*sizeof(eyecatcherType));
 	space += size + 2*sizeof(eyecatcherType);
+
+	// comment by Clark:: 前后一共两个 eyecatcher, 真正的内容用 eyecatcher 包围了  ::2020-12-27
 	*(eyecatcherType*)(s->ptr) = eyecatcher; /* start eyecatcher */
 	*(eyecatcherType*)(((char*)(s->ptr)) + (sizeof(eyecatcherType) + size)) = eyecatcher; /* end eyecatcher */
 	Log(TRACE_MAX, -1, "Allocating %d bytes in heap at file %s line %d ptr %p\n", (int)size, file, line, s->ptr);
-	TreeAdd(&heap, s, space);
-	state.current_size += size;
+	TreeAdd(&heap, s, space);	
+	state.current_size += size;	// comment by Clark:: 记录已malloc的空间大小,这个size是真正的信息内容,  同时记录申请过的最大空间大小 max_size   ::2020-12-27
 	if (state.current_size > state.max_size)
 		state.max_size = state.current_size;
-	rc = ((eyecatcherType*)(s->ptr)) + 1;	/* skip start eyecatcher */
+	rc = ((eyecatcherType*)(s->ptr)) + 1;	/* skip start eyecatcher */			// comment by Clark:: 跳过开始的 eyecatcher, 返回 tree node  ::2020-12-27
 exit:
 	Thread_unlock_mutex(heap_mutex);
 	return rc;
@@ -226,7 +229,7 @@ static void checkEyecatchers(char* file, int line, void* p, size_t size)
 	eyecatcherType us;
 	static const char *msg = "Invalid %s eyecatcher %d in heap item at file %s line %d";
 
-	if ((us = *--sp) != eyecatcher)
+	if ((us = *--sp) != eyecatcher)				// comment by Clark:: 为什么要先减1呢, 开始和结尾的两个 eyecatcher 均要检测  ::2020-12-27
 		Log(LOG_ERROR, 13, msg, "start", us, file, line);
 
 	cp += size;
@@ -247,7 +250,7 @@ static int Internal_heap_unlink(char* file, int line, void* p)
 	Node* e = NULL;
 	int rc = 0;
 
-	e = TreeFind(&heap, ((eyecatcherType*)p)-1);
+	e = TreeFind(&heap, ((eyecatcherType*)p)-1);			
 	if (e == NULL)
 		Log(LOG_ERROR, 13, "Failed to remove heap item at file %s line %d", file, line);
 	else
@@ -468,7 +471,7 @@ int HeapDump(FILE* file)
 	{
 		storageElement* s = (storageElement*)(current->content);
 
-		if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)
+		if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)		// comment by Clark:: &(s->ptr): 地址的地址是什么??, 先写内容的地址, 写成功之后, 再写 size 大小，然后再是实际的内容s->ptr  ::2020-12-27
 			rc = -1;
 		else if (fwrite(&(current->size), sizeof(current->size), 1, file) != 1)
 			rc = -1;
