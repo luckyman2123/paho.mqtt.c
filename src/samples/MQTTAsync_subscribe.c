@@ -43,7 +43,7 @@ int finished = 0;
 void connlost(void *context, char *cause)
 {
 	MQTTAsync client = (MQTTAsync)context;
-	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;		// comment by Clark:: 重新连接时, conn_opts 的参数值与第一次连接有些参数未设置  ::2020-12-22
 	int rc;
 
 	printf("\nConnection lost\n");
@@ -103,6 +103,7 @@ void onConnectFailure(void* context, MQTTAsync_failureData* response)
 }
 
 
+// comment by Clark:: 连接成功回调函数  :: 2020-12-22
 void onConnect(void* context, MQTTAsync_successData* response)
 {
 	MQTTAsync client = (MQTTAsync)context;
@@ -113,7 +114,7 @@ void onConnect(void* context, MQTTAsync_successData* response)
 
 	printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
            "Press Q<Enter> to quit\n\n", TOPIC, CLIENTID, QOS);
-	opts.onSuccess = onSubscribe;
+	opts.onSuccess = onSubscribe;			// comment by Clark:: 订阅成功  ::2020-12-22
 	opts.onFailure = onSubscribeFailure;
 	opts.context = client;
 	if ((rc = MQTTAsync_subscribe(client, TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
@@ -126,8 +127,11 @@ void onConnect(void* context, MQTTAsync_successData* response)
 
 int main(int argc, char* argv[])
 {
+	// comment by Clark::   //[*1] 创建一个MQTTAsync的handle  ::2020-12-22
 	MQTTAsync client;
+	// comment by Clark:: 设置连接选项参数,这里默认给了初始化的参数,mqtt-c自己提供的   ::2020-12-22
 	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+	// comment by Clark:: 设置断开连接选项参数,这里默认给了初始化的参数,mqtt-c自己提供的  ::2020-12-22
 	MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
 	int rc;
 	int ch;
@@ -147,10 +151,10 @@ int main(int argc, char* argv[])
 		goto destroy_exit;
 	}
 
-	conn_opts.keepAliveInterval = 20;
-	conn_opts.cleansession = 1;
-	conn_opts.onSuccess = onConnect;
-	conn_opts.onFailure = onConnectFailure;
+	conn_opts.keepAliveInterval = 20;		// comment by Clark:: 心跳间隔  ::2020-12-22
+	conn_opts.cleansession = 1;				
+	conn_opts.onSuccess = onConnect;		// comment by Clark:: 连接成功的回调函数  ::2020-12-22
+	conn_opts.onFailure = onConnectFailure;	// comment by Clark:: 连接失败的回调函数  ::2020-12-22
 	conn_opts.context = client;
 	if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS)
 	{
@@ -174,6 +178,7 @@ int main(int argc, char* argv[])
 		ch = getchar();
 	} while (ch!='Q' && ch != 'q');
 
+	// comment by Clark:: 退出连接时的操作  ::2020-12-22
 	disc_opts.onSuccess = onDisconnect;
 	disc_opts.onFailure = onDisconnectFailure;
 	if ((rc = MQTTAsync_disconnect(client, &disc_opts)) != MQTTASYNC_SUCCESS)

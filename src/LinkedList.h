@@ -64,6 +64,10 @@ typedef struct ListElementStruct
 /**
  * Structure to hold all data for one list
  */
+
+// comment by Clark::    迭代      ::2020-12-21
+// // comment by Clark:: 查看图  ::2020-12-22
+
 typedef struct
 {
 	ListElement *first,	/**< first element in the list */

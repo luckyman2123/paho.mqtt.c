@@ -2893,6 +2893,7 @@ int MQTTClient_setCommandTimeout(MQTTClient handle, unsigned long milliSeconds)
 }
 
 
+// comment by Clark:: 返回一个指针  ::2020-12-26
 MQTTClient_nameValue* MQTTClient_getVersionInfo(void)
 {
 	#define MAX_INFO_STRINGS 8

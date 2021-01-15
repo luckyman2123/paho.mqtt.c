@@ -32,7 +32,7 @@
 #include "Heap.h"
 
 
-static int ListUnlink(List* aList, void* content, int(*callback)(void*, void*), int freeContent);
+static int 	ListUnlink(List* aList, void* content, int(*callback)(void*, void*), int freeContent);
 
 
 /**
@@ -91,7 +91,7 @@ ListElement* ListAppend(List* aList, void* content, size_t size)
 {
 	ListElement* newel = malloc(sizeof(ListElement));
 	if (newel)
-		ListAppendNoMalloc(aList, content, newel, size);
+		ListAppendNoMalloc(aList, content, newel, size);			// comment by Clark:: size: sizeof(content)  ::2020-12-22
 	return newel;
 }
 
@@ -119,7 +119,7 @@ ListElement* ListInsert(List* aList, void* content, size_t size, ListElement* in
 		newel->prev = index->prev;
 
 		index->prev = newel;
-		if ( newel->prev != NULL )
+		if ( newel->prev != NULL )			// comment by Clark::   ::2020-12-22
 			newel->prev->next = newel;
 		else
 			aList->first = newel;
@@ -155,6 +155,8 @@ ListElement* ListFindItem(List* aList, void* content, int(*callback)(void*, void
 {
 	ListElement* rc = NULL;
 
+	// comment by Clark:: 先查看当前的节点是否与要比较的节点一致, 如果有比较函数, 则使用比较函数，如果没有,则简单比较指针值是否一致    :: 2020-12-22
+	// comment by Clark:: 如果当前节点不符号, 则查找下一个节点, 直到结尾 ::2020-12-22
 	if (aList->current != NULL && ((callback == NULL && aList->current->content == content) ||
 		   (callback != NULL && callback(aList->current->content, content))))
 		rc = aList->current;
@@ -183,7 +185,7 @@ ListElement* ListFindItem(List* aList, void* content, int(*callback)(void*, void
 			}
 		}
 		if (rc != NULL)
-			aList->current = rc;
+			aList->current = rc;			// comment by Clark:: 赋值给当前的节点        ::2020-12-22
 	}
 	return rc;
 }
@@ -207,13 +209,13 @@ static int ListUnlink(List* aList, void* content, int(*callback)(void*, void*), 
 	if (!ListFindItem(aList, content, callback))
 		return 0; /* false, did not remove item */
 
-	if (aList->current->prev == NULL)
+	if (aList->current->prev == NULL)			// comment by Clark:: 第一个  ::2020-12-22
 		/* so this is the first element, and we have to update the "first" pointer */
 		aList->first = aList->current->next;
 	else
 		aList->current->prev->next = aList->current->next;
 
-	if (aList->current->next == NULL)
+	if (aList->current->next == NULL)			// comment by Clark:: 最后一个  ::2020-12-22
 		aList->last = aList->current->prev;
 	else
 		aList->current->next->prev = aList->current->prev;
@@ -347,7 +349,8 @@ int ListDetachItem(List* aList, void* content, int(*callback)(void*, void*))
  * @return 1=item removed, 0=item not removed
  */
 int ListRemoveItem(List* aList, void* content, int(*callback)(void*, void*))
-{ /* remove from list and free the content */
+{ 
+	/* remove from list and free the content */
 	return ListUnlink(aList, content, callback, 1);
 }
 

@@ -66,6 +66,7 @@ int MQTTPersistence_create(MQTTClient_persistence** persistence, int type, void*
 			{
 				if ( pcontext == NULL )
 					pcontext = "."; /* working directory */
+					
 				if ((per->context = malloc(strlen(pcontext) + 1)) == NULL)
 				{
 					free(per);
@@ -121,7 +122,7 @@ int MQTTPersistence_initialize(Clients *c, const char *serverURI)
 	{
 		rc = c->persistence->popen(&(c->phandle), c->clientID, serverURI, c->persistence->context);
 		if ( rc == 0 )
-			rc = MQTTPersistence_restorePackets(c);
+			rc = MQTTPersistence_restorePackets(c);// comment by Clark:: 恢复到内存中  ::2020-12-22
 	}
 
 	FUNC_EXIT_RC(rc);

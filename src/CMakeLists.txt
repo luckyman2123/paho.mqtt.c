@@ -49,6 +49,8 @@ SET(common_src
   WebSocket.c
 )
 
+### 叠加变量 common_src
+
 IF (NOT PAHO_HIGH_PERFORMANCE)
   SET(common_src ${common_src}
     StackTrace.c
@@ -56,6 +58,8 @@ IF (NOT PAHO_HIGH_PERFORMANCE)
     )
 ENDIF()
 
+### LIBS_SYSTEM: 编译时添加系统库
+### FIND_LIBRARY: 查找库
 IF (WIN32)
     SET(LIBS_SYSTEM ws2_32 crypt32 RpcRT4)
 ELSEIF (UNIX)
@@ -79,6 +83,8 @@ ENDIF()
 
 IF (PAHO_BUILD_SHARED)
 # common compilation for libpaho-mqtt3c and libpaho-mqtt3a
+### ADD_LIBRARY: 创建库
+### ADD_EXECUTABLE, 它的作用是添加一个可执行文件构建目标
 ADD_LIBRARY(common_obj OBJECT ${common_src})
 SET_TARGET_PROPERTIES(common_obj PROPERTIES
     POSITION_INDEPENDENT_CODE ON
@@ -89,7 +95,8 @@ SET_TARGET_PROPERTIES(MQTTVersion PROPERTIES
     COMPILE_DEFINITIONS "PAHO_MQTT_IMPORTS=1")
 ENDIF()
 
-IF (PAHO_BUILD_STATIC)    
+### common_obj_static: 静态库文件
+IF (PAHO_BUILD_STATIC)
 ADD_LIBRARY(common_obj_static OBJECT ${common_src})
 SET_TARGET_PROPERTIES(common_obj_static PROPERTIES
     POSITION_INDEPENDENT_CODE ON
@@ -97,9 +104,12 @@ SET_TARGET_PROPERTIES(common_obj_static PROPERTIES
 ENDIF()
 
 IF (PAHO_BUILD_SHARED)
+	#### 
     ADD_LIBRARY(paho-mqtt3c SHARED $<TARGET_OBJECTS:common_obj> MQTTClient.c)
     ADD_LIBRARY(paho-mqtt3a SHARED $<TARGET_OBJECTS:common_obj> MQTTAsync.c MQTTAsyncUtils.c)
-    
+
+    ### 该指令的作用为将目标文件与库文件进行链接
+    ### 
     TARGET_LINK_LIBRARIES(paho-mqtt3c ${LIBS_SYSTEM})
     TARGET_LINK_LIBRARIES(paho-mqtt3a ${LIBS_SYSTEM})
     TARGET_LINK_LIBRARIES(MQTTVersion paho-mqtt3a paho-mqtt3c ${LIBS_SYSTEM})
@@ -152,7 +162,9 @@ IF (PAHO_BUILD_STATIC)
     TARGET_LINK_LIBRARIES(paho-mqtt3c-static ${LIBS_SYSTEM})
     TARGET_LINK_LIBRARIES(paho-mqtt3a-static ${LIBS_SYSTEM})
     IF (NOT WIN32)
-        SET_TARGET_PROPERTIES(paho-mqtt3c-static PROPERTIES OUTPUT_NAME paho-mqtt3c)
+    	### 重命令生成的静态库的名称
+        SET_TARGET_PROPERTIES(paho-mqtt3c-static PROPERTIES OUTPUT_NAME paho-mqtt3c)		
+        ### 重命令生成的静态库的名称
         SET_TARGET_PROPERTIES(paho-mqtt3a-static PROPERTIES OUTPUT_NAME paho-mqtt3a)
     ENDIF()       
     SET_TARGET_PROPERTIES(

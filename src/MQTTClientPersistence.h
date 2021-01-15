@@ -14,6 +14,7 @@
  *    Ian Craggs - initial API and implementation and/or initial documentation
  *******************************************************************************/
 
+// comment by Clark:: persistence: 持久化机制  ::2020-12-21
 /**
  * @file
  * \brief This structure represents a persistent data store, used to store 
@@ -44,7 +45,7 @@
  * If the functions defined return an ::MQTTCLIENT_PERSISTENCE_ERROR then the 
  * state of the persisted data should remain as it was prior to the function 
  * being called. For example, if Persistence_put() returns 
- * ::MQTTCLIENT_PERSISTENCE_ERROR, then it is assumed tha tthe persistent store
+ * ::MQTTCLIENT_PERSISTENCE_ERROR, then it is assumed that the persistent store
  * does not contain the data that was passed to the function. Similarly,  if 
  * Persistence_remove() returns ::MQTTCLIENT_PERSISTENCE_ERROR then it is 
  * assumed that the data to be removed is still held in the persistent store.
@@ -62,16 +63,21 @@
 /// @endcond
 */
 
+// comment by Clark:: 基于文件系统的持久化机制，当基于文件系统持久化机制时，参数 persistence_context 被传递给 create 是用来指定持久化的目录路径，如果此参数为空，则当前工作目录将被使用  ::2020-12-21
 /**
   * This <i>persistence_type</i> value specifies the default file system-based 
   * persistence mechanism (see MQTTClient_create()).
   */
 #define MQTTCLIENT_PERSISTENCE_DEFAULT 0
+
+// comment by Clark:: 基于内存持久化机制  ::2020-12-21
 /**
   * This <i>persistence_type</i> value specifies a memory-based 
   * persistence mechanism (see MQTTClient_create()).
   */
 #define MQTTCLIENT_PERSISTENCE_NONE 1
+
+// comment by Clark:: 应用自定义持久化机制，自定义持久化机制时, 需要实现 MQTTClient_persistence 来填充  ::2020-12-21
 /**
   * This <i>persistence_type</i> value specifies an application-specific 
   * persistence mechanism (see MQTTClient_create()).
@@ -266,6 +272,7 @@ typedef struct {
 typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);
 
 
+// comment by Clark:: 应用场景: 加解密,   ::2020-12-22
 /**
  * A callback which is invoked just after a read from persistence.  This can be
  * used to transform the data, for instance to decrypt it.  If the buffers are

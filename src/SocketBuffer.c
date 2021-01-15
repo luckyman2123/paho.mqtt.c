@@ -42,8 +42,12 @@
 /**
  * Default input queue buffer
  */
+
+// comment by Clark:: 当前默认的对象  ::2020-12-22
 static socket_queue* def_queue;
 
+
+// comment by Clark:: content 结构体为 socket_queue  ::2020-12-22
 /**
  * List of queued input buffers
  */
@@ -85,7 +89,7 @@ int SocketBuffer_newDefQ(void)
 	{
 		def_queue->buflen = 1000;
 		def_queue->buf = malloc(def_queue->buflen);
-		if (def_queue->buf)
+		if (def_queue->buf)		// comment by Clark:: 成功??   ::2020-12-22
 		{
 			def_queue->socket = def_queue->index = 0;
 			def_queue->buflen = def_queue->datalen = def_queue->headerlen = 0;
@@ -95,6 +99,8 @@ int SocketBuffer_newDefQ(void)
 	return rc;
 }
 
+
+// comment by Clark::   ::2020-12-22
 
 /**
  * Initialize the socketBuffer module
@@ -137,9 +143,9 @@ void SocketBuffer_terminate(void)
 
 	FUNC_ENTRY;
 	while (ListNextElement(queues, &cur))
-		free(((socket_queue*)(cur->content))->buf);
-	ListFree(queues);
-	SocketBuffer_freeDefQ();
+		free(((socket_queue*)(cur->content))->buf);// comment by Clark:: 释放 socket_queue 中的 buf  ::2020-12-22
+	ListFree(queues);								// comment by Clark:: 释放 contents,   同时释放List指针        ::2020-12-22
+	SocketBuffer_freeDefQ();			
 	FUNC_EXIT;
 }
 
@@ -195,10 +201,10 @@ char* SocketBuffer_getQueuedData(int socket, size_t bytes, size_t* actual_len)
 			void* newmem = malloc(bytes);
 
 			free(queue->buf);
-			queue->buf = newmem;
+			queue->buf = newmem;		// comment by Clark:: 重新创建缓存区，并且将buf指向新的缓冲区  ::2020-12-22
 			if (!newmem)
 				goto exit;
-			memcpy(newmem, queue->buf, queue->datalen);
+			memcpy(newmem, queue->buf, queue->datalen);// comment by Clark:: 这个拷贝是啥意思  ::2020-12-22
 		}
 		else
 			queue->buf = realloc(queue->buf, bytes);

@@ -50,7 +50,7 @@ enum msgTypes
 	PINGREQ, PINGRESP, DISCONNECT, AUTH
 };
 
-#if defined(__linux__)
+#if defined(__linux__)				// comment by Clark:: 大小端,宏处理        ::2020-12-22
 #include <endian.h>
 #if __BYTE_ORDER == __BIG_ENDIAN
 	#define REVERSED 1

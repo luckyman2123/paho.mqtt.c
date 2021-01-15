@@ -126,7 +126,7 @@ int printVersionInfo(MQTTAsync_nameValue* info)
 	while (info->name)
 	{
 		printf("%s: %s\n", info->name, info->value);
-		info++;				// comment by Clark:: �ṹ��ָ�� +1       ::2020-12-26
+		info++;				// comment by Clark:: ½á¹¹ÌåÖ¸Õë +1       ::2020-12-26
 		rc = 1;  /* at least one value printed */
 	}
 	return rc;
@@ -136,6 +136,9 @@ typedef MQTTAsync_nameValue* (*func_type)(void);
 
 
 // comment by Clark:: dlsym: obtain the address of a symbol from a dlopen() object  ::2020-12-26
+// comment by Clark:: å¨æåºæä½  ::2020-12-26
+
+
 int loadandcall(const char* libname)
 {
 	int rc = 0;
@@ -153,7 +156,7 @@ int loadandcall(const char* libname)
 			rc = printVersionInfo((*func_address)());
 		FreeLibrary(APILibrary);
 	}
-#else
+#else		// comment by Clark:: å è½½å¨æåº  ::2020-12-26
 	void* APILibrary = dlopen(libname, RTLD_LAZY); /* Open the Library in question */
 	if (APILibrary == NULL)
 		printf("Error loading library %s, error %s\n", libname, dlerror());
@@ -161,7 +164,7 @@ int loadandcall(const char* libname)
 	{
 		*(void **) (&func_address) = dlsym(APILibrary, "MQTTAsync_getVersionInfo");
 		if (func_address == NULL)
-			func_address = dlsym(APILibrary, "MQTTClient_getVersionInfo");
+			func_address = dlsym(APILibrary, "MQTTClient_getVersionInfo");	// comment by Clark:: è¿åä¸ä¸ªå°å  ::2020-12-26
 		if (func_address)
 			rc = printVersionInfo((*func_address)());
 		dlclose(APILibrary);
@@ -193,7 +196,7 @@ int main(int argc, char** argv)
 	printf("MQTTVersion: print the version strings of an MQTT client library\n"); 
 	printf("Copyright (c) 2012, 2018 IBM Corp.\n");
 	
-	if (argc == 1)				// comment by Clark:: ��ֻ��һ��������ʱ��, ��ӡȫ���Ķ�̬�������Ϣ  ::2020-12-26
+	if (argc == 1)				// comment by Clark:: µ±Ö»ÓÐÒ»¸ö²ÎÊýµÄÊ±ºò, ´òÓ¡È«²¿µÄ¶¯Ì¬¿âÏà¹ØÐÅÏ¢  ::2020-12-26
 	{
 		int i = 0;
 		char namebuf[60];

@@ -882,7 +882,7 @@ static int clientCompareConnectCommand(void* a, void* b)
 	return 0;	//Item NOT found in the list
 }								   
 
-
+// comment by Clark:: 命令?  ::2020-12-22
 int MQTTAsync_addCommand(MQTTAsync_queuedCommand* command, int command_size)
 {
 	int rc = MQTTASYNC_SUCCESS;
@@ -892,6 +892,7 @@ int MQTTAsync_addCommand(MQTTAsync_queuedCommand* command, int command_size)
 	/* Don't set start time if the connect command is already in process #218 */
 	if ((command->command.type != CONNECT) || (command->client->c->connect_state == NOT_IN_PROGRESS))
 		command->command.start_time = MQTTTime_start_clock();
+		
 	if (command->command.type == CONNECT ||
 		(command->command.type == DISCONNECT && command->command.details.dis.internal))
 	{
@@ -1275,7 +1276,7 @@ static int MQTTAsync_processCommand(void)
 	{
 		MQTTAsync_queuedCommand* cmd = (MQTTAsync_queuedCommand*)(cur_command->content);
 
-		if (ListFind(ignored_clients, cmd->client))
+		if (ListFind(ignored_clients, cmd->client))		// comment by Clark:: 忽略客户端列表  ::2020-12-22
 			continue;
 
 		if (cmd->command.type == CONNECT || cmd->command.type == DISCONNECT || (cmd->client->c->connected &&
@@ -2645,7 +2646,7 @@ int MQTTAsync_disconnect1(MQTTAsync handle, const MQTTAsync_disconnectOptions* o
 	}
 	dis->command.type = DISCONNECT;
 	dis->command.details.dis.internal = internal;
-	rc = MQTTAsync_addCommand(dis, sizeof(dis));
+	rc = MQTTAsync_addCommand(dis, sizeof(dis));		
 
 exit:
 	FUNC_EXIT_RC(rc);

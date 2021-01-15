@@ -52,6 +52,26 @@ START_TIME_TYPE MQTTTime_start_clock(void)
 	return start;
 }
 #else
+
+// comment by Clark:: 
+// struct timeval {
+//        long    tv_sec;         /* seconds */
+//        long    tv_usec;        /* and microseconds */  纳秒
+// };  
+// 
+// struct timespec {
+// time_t tv_sec; // seconds 
+// long tv_nsec; // and nanoseconds 		毫秒
+// };
+// ::2020-12-22
+/**
+     一般由函数int clock_gettime(clockid_t, struct timespec *)获取特定时钟的时间，常用如下4种时钟：
+     CLOCK_REALTIME 系统当前时间，从 1970 年1月1日算起
+     CLOCK_MONOTONIC 系统的启动时间，不能被设置
+     CLOCK_PROCESS_CPUTIME_ID 本进程运行时间
+     CLOCK_THREAD_CPUTIME_ID 本线程运行时间
+*/
+
 START_TIME_TYPE MQTTTime_start_clock(void)
 {
 	static struct timeval start;
@@ -106,7 +126,7 @@ DIFF_TIME_TYPE MQTTTime_difftime(START_TIME_TYPE new, START_TIME_TYPE old)
 #endif
 
 
-// comment by Clark:: elapse: ����, ��ȥ  ::2020-12-26
+// comment by Clark:: elapse: ÏûÊÅ, ¹ýÈ¥  ::2020-12-26
 ELAPSED_TIME_TYPE MQTTTime_elapsed(START_TIME_TYPE milliseconds)
 {
 	return (ELAPSED_TIME_TYPE)MQTTTime_difftime(MQTTTime_now(), milliseconds);

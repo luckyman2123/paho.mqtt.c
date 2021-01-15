@@ -16,7 +16,11 @@
 #*******************************************************************************/
 
 # Note: on OS X you should install XCode and the associated command-line tools
-
+# comment by Clark:: 检查cmake的版本，至少为2.8  ::2020-12-25
+# 编译的
+### CMAKE_SYSTEM_NAME: 在toolchain脚本(cmake/toolchain.linux-arm-himix200.cmake)中必须要设置的变量，
+### 只有当CMAKE_SYSTEM_NAME这个变量被设置了，CMake才认为此时正在交叉编译，它会额外设置一个变量CMAKE_CROSSCOMPILING为TRUE。
+### 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT("Eclipse Paho C" C)
 MESSAGE(STATUS "CMake version: " ${CMAKE_VERSION})
@@ -36,6 +40,8 @@ INCLUDE(GNUInstallDirs)
 STRING(TIMESTAMP BUILD_TIMESTAMP UTC)
 MESSAGE(STATUS "Timestamp is ${BUILD_TIMESTAMP}")
 
+# 添加宏 PAHO_HIGH_PERFORMANCE
+# 如果定义了 PAHO_HIGH_PERFORMANCE的话，则添加宏定义 -DHIGH_PERFORMANCE=1
 IF (PAHO_HIGH_PERFORMANCE)
   ADD_DEFINITIONS(-DHIGH_PERFORMANCE=1)
 ENDIF()
@@ -75,7 +81,10 @@ ENDIF()
 
 IF (PAHO_ENABLE_CPACK)
     ### packaging settings
+    ### file(GLOB variable [RELATIVE path] [globbingexpressions]...)
+    ## GLOB 会产生一个由所有匹配
     FILE(GLOB samples "src/samples/*.c")
+    ### 将 samples 变量所指代的文件拷贝至其它目录
     INSTALL(FILES ${samples} DESTINATION ${CMAKE_INSTALL_DOCDIR}/samples)
 
     SET(CPACK_PACKAGE_VENDOR "Eclipse Paho")

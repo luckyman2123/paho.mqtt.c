@@ -66,7 +66,7 @@
 
 static void MQTTAsync_freeServerURIs(MQTTAsyncs* m);
 
-#include "VersionInfo.h"
+#include "VersionInfo.h"			// comment by Clark:: VersionInfo.h 会被自动生成  ::2020-12-22
 
 const char *client_timestamp_eye = "MQTTAsyncV3_Timestamp " BUILD_TIMESTAMP;
 const char *client_version_eye = "MQTTAsyncV3_Version " CLIENT_VERSION;
@@ -256,7 +256,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 #else
 static pthread_mutex_t mqttasync_mutex_store = PTHREAD_MUTEX_INITIALIZER;
-mutex_type mqttasync_mutex = &mqttasync_mutex_store;
+mutex_type mqttasync_mutex = &mqttasync_mutex_store;				// comment by Clark:: mutex_type 兼容各种操作系统下的 mutex写法  ::2020-12-22
 
 static pthread_mutex_t socket_mutex_store = PTHREAD_MUTEX_INITIALIZER;
 mutex_type socket_mutex = &socket_mutex_store;
@@ -298,7 +298,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 		int persistence_type, void* persistence_context,  MQTTAsync_createOptions* options)
 {
 	int rc = 0;
-	MQTTAsyncs *m = NULL;
+	MQTTAsyncs *m = NULL;			// comment by Clark:: MQTTAsyncs 主要的结构体  ::2020-12-22
 
 #if (defined(_WIN32) || defined(_WIN64)) && defined(PAHO_MQTT_STATIC)
 	 /* intializes mutexes once.  Must come before FUNC_ENTRY */
@@ -353,7 +353,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 			Heap_initialize();
 		#endif
 		Log_initialize((Log_nameValue*)MQTTAsync_getVersionInfo());
-		bstate->clients = ListInitialize();
+		bstate->clients = ListInitialize();		// comment by Clark:: 全局的client列表  ::2020-12-22
 		Socket_outInitialize();
 		Socket_setWriteCompleteCallback(MQTTAsync_writeComplete);
 		MQTTAsync_handles = ListInitialize();
@@ -375,7 +375,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 	else if (strncmp(URI_WS, serverURI, strlen(URI_WS)) == 0)
 	{
 		serverURI += strlen(URI_WS);
-		m->websocket = 1;
+		m->websocket = 1;				// comment by Clark:: 当使用webSocket时，则 m->websocket打开  ::2020-12-22
 	}
 #if defined(OPENSSL)
 	else if (strncmp(URI_SSL, serverURI, strlen(URI_SSL)) == 0)
@@ -390,13 +390,13 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 		m->websocket = 1;
 	}
 #endif
-	if ((m->serverURI = MQTTStrdup(serverURI)) == NULL)
+	if ((m->serverURI = MQTTStrdup(serverURI)) == NULL)		// comment by Clark:: 去除前面的协议后面的所有字符串  ::2020-12-22
 	{
 		rc = PAHO_MEMORY_ERROR;
 		goto exit;
 	}
 	m->responses = ListInitialize();
-	ListAppend(MQTTAsync_handles, m, sizeof(MQTTAsyncs));
+	ListAppend(MQTTAsync_handles, m, sizeof(MQTTAsyncs));// comment by Clark:: 加入 MQTTAsync_handles 链表  ::2020-12-22
 
 	if ((m->c = malloc(sizeof(Clients))) == NULL)
 	{
@@ -404,7 +404,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 		goto exit;
 	}
 	memset(m->c, '\0', sizeof(Clients));
-	m->c->context = m;
+	m->c->context = m;			// comment by Clark:: 反向指针  ::2020-12-22
 	m->c->outboundMsgs = ListInitialize();
 	m->c->inboundMsgs = ListInitialize();
 	m->c->messageQueue = ListInitialize();
@@ -427,7 +427,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 		}
 		memcpy(m->createOptions, options, sizeof(MQTTAsync_createOptions));
 		if (options->struct_version > 0)
-			m->c->MQTTVersion = options->MQTTVersion;
+			m->c->MQTTVersion = options->MQTTVersion;			// comment by Clark:: 版本号在此赋值          ::2020-12-22
 	}
 
 #if !defined(NO_PERSISTENCE)
@@ -529,7 +529,7 @@ exit:
 
 int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 {
-	MQTTAsyncs* m = handle;
+	MQTTAsyncs* m = handle;			// comment by Clark:: 创建时底层具体返回的是一个 MQTTAsyncs 结构体  ::2020-12-22
 	int rc = MQTTASYNC_SUCCESS;
 	MQTTAsync_queuedCommand* conn;
 	thread_id_type thread_id = 0;
@@ -639,12 +639,12 @@ int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 	if (sendThread_state != STARTING && sendThread_state != RUNNING)
 	{
 		sendThread_state = STARTING;
-		Thread_start(MQTTAsync_sendThread, NULL);
+		Thread_start(MQTTAsync_sendThread, NULL);		// comment by Clark:: 创建发送线程  ::2020-12-22
 	}
 	if (receiveThread_state != STARTING && receiveThread_state != RUNNING)
 	{
 		receiveThread_state = STARTING;
-		Thread_start(MQTTAsync_receiveThread, handle);
+		Thread_start(MQTTAsync_receiveThread, handle);		// comment by Clark:: 创建接收线程        ::2020-12-22
 	}
 	if (locked)
 		MQTTAsync_unlock_mutex(mqttasync_mutex);
@@ -663,7 +663,7 @@ int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 		m->minRetryInterval = options->minRetryInterval;
 		m->maxRetryInterval = options->maxRetryInterval;
 	}
-	if (options->struct_version >= 7)
+	if (options->struct_version >= 7)		// comment by Clark:: 往后兼容的写法  ::2020-12-22
 	{
 		m->c->net.httpHeaders = (const MQTTClient_nameValue *) options->httpHeaders;
 	}
@@ -819,7 +819,7 @@ int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 	}
 
 	m->c->retryInterval = options->retryInterval;
-	m->shouldBeConnected = 1;
+	m->shouldBeConnected = 1;		// comment by Clark:: 标志位, 表示开始可以连接了  ::2020-12-22
 
 	m->connectTimeout = options->connectTimeout;
 
@@ -891,7 +891,7 @@ int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 		goto exit;
 	}
 	memset(conn, '\0', sizeof(MQTTAsync_queuedCommand));
-	conn->client = m;
+	conn->client = m;			// comment by Clark:: 与 m 关联起来::2020-12-22
 	if (options)
 	{
 		conn->command.onSuccess = options->onSuccess;
@@ -970,7 +970,7 @@ int MQTTAsync_subscribeMany(MQTTAsync handle, int count, char* const* topic, int
 		rc = MQTTASYNC_FAILURE;
 	else if (m->c->connected == 0)
 		rc = MQTTASYNC_DISCONNECTED;
-	else for (i = 0; i < count; i++)
+	else for (i = 0; i < count; i++)		// comment by Clark:: 有 else for 的写法??? 第一次见到  ::2020-12-22
 	{
 		if (!UTF8_validateString(topic[i]))
 		{
@@ -1488,7 +1488,7 @@ int MQTTAsync_setCallbacks(MQTTAsync handle, void* context,
 									MQTTAsync_deliveryComplete* dc)
 {
 	int rc = MQTTASYNC_SUCCESS;
-	MQTTAsyncs* m = handle;
+	MQTTAsyncs* m = handle;		// comment by Clark:: MQTTAsync -> void *  ::2020-12-22
 
 	FUNC_ENTRY;
 	MQTTAsync_lock_mutex(mqttasync_mutex);

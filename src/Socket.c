@@ -1011,7 +1011,7 @@ int Socket_continueWrites(fd_set* pwset, int* sock)
 			curpending = mod_s.write_pending->current;
 
 			if (writecomplete)
-				(*writecomplete)(socket, rc);
+				(*writecomplete)(socket, rc);		
 		}
 		else
 			ListNextElement(mod_s.write_pending, &curpending);

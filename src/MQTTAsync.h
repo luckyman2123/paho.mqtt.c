@@ -126,7 +126,7 @@
  */
 #define MQTTASYNC_DISCONNECTED -3
 /**
- * Return code: The maximum number of messages allowed to be simultaneously
+ * Return code: The maximum number of messages allowed to be simultaneously			// comment by Clark:: simultaneously 同时地, in-flight : 在飞行中, 同时运行  ::2020-12-21
  * in-flight has been reached.
  */
 #define MQTTASYNC_MAX_MESSAGES_INFLIGHT -4
@@ -139,13 +139,13 @@
  */
 #define MQTTASYNC_NULL_PARAMETER -6
 /**
- * Return code: The topic has been truncated (the topic string includes
+ * Return code: The topic has been truncated[^缩减的, 删节的] (the topic string includes		
  * embedded NULL characters). String functions will not access the full topic.
  * Use the topic length value to access the full topic.
  */
-#define MQTTASYNC_TOPICNAME_TRUNCATED -7
+#define MQTTASYNC_TOPICNAME_TRUNCATED -7					// comment by Clark:: topic name 被删节了  ::2020-12-21
 /**
- * Return code: A structure parameter does not have the correct eyecatcher
+ * Return code: A structure parameter does not have the correct eyecatcher		// comment by Clark::  eyecatcher 识别序列  ::2020-12-21
  * and version number.
  */
 #define MQTTASYNC_BAD_STRUCTURE -8
@@ -158,7 +158,7 @@
  */
 #define MQTTASYNC_NO_MORE_MSGIDS -10
 /**
- * Return code: the request is being discarded when not complete
+ * Return code: the request is being discarded when not complete		// comment by Clark:: discarded: 丢弃的  ::2020-12-21
  */
 #define MQTTASYNC_OPERATION_INCOMPLETE -11
 /**
@@ -168,17 +168,17 @@
 /**
  * Return code: Attempting SSL connection using non-SSL version of library
  */
-#define MQTTASYNC_SSL_NOT_SUPPORTED -13
+#define MQTTASYNC_SSL_NOT_SUPPORTED -13										// comment by Clark:: 使用不带SSL 版本的库试图 完成 SSL连接                 ::2020-12-21
  /**
   * Return code: protocol prefix in serverURI should be tcp://, ssl://, ws:// or wss://
   * The TLS enabled prefixes (ssl, wss) are only valid if the TLS version of the library
   * is linked with.
   */
-#define MQTTASYNC_BAD_PROTOCOL -14
+#define MQTTASYNC_BAD_PROTOCOL -14											// comment by Clark:: 协议, tcp, ssl, ws, wss     ::2020-12-21
  /**
   * Return code: don't use options for another version of MQTT
   */
- #define MQTTASYNC_BAD_MQTT_OPTION -15
+ #define MQTTASYNC_BAD_MQTT_OPTION -15										// comment by Clark:: MQTT其它版本的选项         ::2020-12-21
  /**
   * Return code: call not applicable to the client's version of MQTT
   */
@@ -216,10 +216,15 @@
  */
 typedef struct
 {
+	// comment by Clark:: 结构体的识别序列  ::2020-12-21
 	/** The eyecatcher for this structure.  Must be MQTG. */
-	char struct_id[4];
+	char struct_id[4];	
+	
+	// comment by Clark:: 结构体的版本  ::2020-12-21
+	
 	/** The version number of this structure.  Must be 0 */
 	int struct_version;
+	
 	/** 1 = we do openssl init, 0 = leave it to the application */
 	int do_openssl_init;
 } MQTTAsync_init_options;
@@ -236,7 +241,7 @@ LIBMQTT_API void MQTTAsync_global_init(MQTTAsync_init_options* inits);
  * A handle representing an MQTT client. A valid client handle is available
  * following a successful call to MQTTAsync_create().
  */
-typedef void* MQTTAsync;
+typedef void* MQTTAsync;			// comment by Clark:: 创建后返回的句柄  ::2020-12-21
 /**
  * A value representing an MQTT message. A token is returned to the
  * client application when a message is published. The token can then be used to
@@ -279,6 +284,8 @@ typedef struct
      * </DL>
      */
 	int qos;
+	// comment by Clark:: retained = true,  对于发送的消息, true设置表明 MQTT 服务器应该保留一份消息的拷贝， 对于消息的订阅者, 这个标志位为true表明接收到消息不是一个新消息，而是被服务器保留的消息 ::2020-12-21
+	// comment by Clark:: retained = false, 对于消息的发布者, false标志位表明这条消息将不会被MQTT服务器保存, 对于订阅者, false表明这是一个正常的消息 ::2020-12-21
 	/**
      * The retained flag serves two purposes depending on whether the message
      * it is associated with is being published or received.
@@ -298,6 +305,7 @@ typedef struct
      * server.
      */
 	int retained;
+	// comment by Clark:: dup标志位, 只有当接收QoS1级别的消息才有意义, 当 dup 标志位为 true 时, 客户端应用应该采取合适的操作来处理此副本消息  ::2020-12-21
 	/**
       * The dup flag indicates whether or not this message is a duplicate.
       * It is only meaningful when receiving QoS1 messages. When true, the
@@ -305,6 +313,7 @@ typedef struct
       * duplicate message.
       */
 	int dup;
+	// comment by Clark:: 消息Id是保留给 MQTT 客户端及服务器 内部使用的, 仅仅是一个输出参数, 设置此参数将无意义  ::2020-12-21
 	/** The message identifier is reserved for internal use by the
       * MQTT client and server.  It is an output parameter only - writing
       * to it will serve no purpose.
@@ -317,6 +326,10 @@ typedef struct
 } MQTTAsync_message;
 
 #define MQTTAsync_message_initializer { {'M', 'Q', 'T', 'M'}, 1, 0, NULL, 0, 0, 0, 0, MQTTProperties_initializer }
+
+// comment by Clark:: 函数返回值为0或1，1表示消息被正确处理, 消息正确处理后, 需要调用MQTTAsync_freeMessage来释放消息体  ::2020-12-21
+// comment by Clark:: 同时调用 MQTTAsync_free 来释放 消息名的 存储  ::2020-12-21
+// comment by Clark:: 返回值为0, 则客户端库会重新调用 MQTTAsync_messageArrived() 来尝试重新 接收 消息，  ::2020-12-21
 
 /**
  * This is a callback function. The client application
@@ -615,6 +628,8 @@ typedef struct
 
 #define MQTTAsync_successData5_initializer {{'M', 'Q', 'S', 'D'}, 0, 0, MQTTREASONCODE_SUCCESS, MQTTProperties_initializer}
 
+// comment by Clark:: 不能在此函数中调用 create 和 destory 函数  ::2020-12-21
+// comment by Clark::  此函数当作responseOptions的参数传递进去  ::2020-12-21
 /**
  * This is a callback function. The client application
  * must provide an implementation of this function to enable asynchronous
@@ -675,6 +690,9 @@ typedef void MQTTAsync_onFailure(void* context,  MQTTAsync_failureData* response
  * @param response Failure data associated with the API completion.
  */
 typedef void MQTTAsync_onFailure5(void* context,  MQTTAsync_failureData5* response);
+
+
+// comment by Clark:: synonym: 同义词,   ::2020-12-21
 
 /** Structure to define call options.  For MQTT 5.0 there is input data as well as that
  * describing the response method.  So there is now also a synonym ::MQTTAsync_callOptions
@@ -749,6 +767,9 @@ typedef struct MQTTAsync_responseOptions
 typedef struct MQTTAsync_responseOptions MQTTAsync_callOptions;
 #define MQTTAsync_callOptions_initializer MQTTAsync_responseOptions_initializer
 
+
+// comment by Clark:: 此函数被调用时，客户端必须处于断开状态  ::2020-12-21
+// comment by Clark:: ma必须设置，如果没有未传入参数, 则函数会返回错误, 如果不设置，则无法处理消息  ::2020-12-21
 /**
  * This function sets the global callback functions for a specific client.
  * If your client application doesn't use a particular callback, set the
@@ -865,6 +886,7 @@ LIBMQTT_API int MQTTAsync_setDeliveryCompleteCallback(MQTTAsync handle, void* co
 LIBMQTT_API int MQTTAsync_setConnected(MQTTAsync handle, void* context, MQTTAsync_connected* co);
 
 
+// comment by Clark:: 重连  ::2020-12-21
 /**
  * Reconnects a client with the previously used connect options.  Connect
  * must have previously been called for this to work.
@@ -934,10 +956,16 @@ typedef struct
 	 * 2 means no persistQoS0
 	 */
 	int struct_version;
+
+	// comment by Clark::    当库没有连接时, 是否允许消息发送                 ::2020-12-21
 	/** Whether to allow messages to be sent when the client library is not connected. */
 	int sendWhileDisconnected;
+	
+	// comment by Clark::    当没有连接时，最大的消息缓存量                   ::2020-12-21
 	/** The maximum number of messages allowed to be buffered while not connected. */
 	int maxBufferedMessages;
+
+	
 	/** Whether the MQTT version is 3.1, 3.1.1, or 5.  To use V5, this must be set.
 	 *  MQTT V5 has to be chosen here, because during the create call the message persistence
 	 *  is initialized, and we want to know whether the format of any persisted messages
@@ -1170,6 +1198,8 @@ typedef struct
       * 7 signifies no HTTP proxy and HTTPS proxy options
 	  */
 	int struct_version;
+
+	// comment by Clark:: 保活间隔, 以时间为单位, 发送非常小的 MQTT ping 消息, 可以动态感知远端的服务器是否存在，不通过长的 tcp/ip 时间机制  ::2020-12-21
 	/** The "keep alive" interval, measured in seconds, defines the maximum time
       * that should pass without communication between the client and the server
       * The client will ensure that at least one message travels across the
@@ -1181,6 +1211,8 @@ typedef struct
 	  * Set to 0 if you do not want any keep alive processing.
 	  */
 	int keepAliveInterval;
+
+	// comment by Clark::    客户端及服务器均保持会话状态信息,   至少一次或仅一次传输   ::2020-12-21
 	/**
       * This is a boolean value. The cleansession setting controls the behaviour
       * of both the client and the server at connection and disconnection time.
@@ -1203,6 +1235,8 @@ typedef struct
       * session is started.
 	  */
 	int cleansession;
+
+	// comment by Clark:: 能同时传输多少个消息  ::2020-12-21
 	/**
       * This controls how many messages can be in-flight simultaneously.
 	  */
@@ -1212,19 +1246,19 @@ typedef struct
       * application does not make use of the Last Will and Testament feature,
       * set this pointer to NULL.
       */
-	MQTTAsync_willOptions* will;
+	MQTTAsync_willOptions* will;		// comment by Clark:: Testament: 证明, 证据  ::2020-12-22
 	/**
       * MQTT servers that support the MQTT v3.1 protocol provide authentication
       * and authorisation by user name and password. This is the user name
       * parameter.
       */
-	const char* username;
+	const char* username;	// comment by Clark:: 连接登录时的用户名  ::2020-12-22
 	/**
       * MQTT servers that support the MQTT v3.1 protocol provide authentication
       * and authorisation by user name and password. This is the password
       * parameter.
       */
-	const char* password;
+	const char* password;	// comment by Clark:: 连接登录时的密码  ::2020-12-22
 	/**
       * The time interval in seconds to allow a connect to complete.
       */
@@ -1501,6 +1535,7 @@ LIBMQTT_API int MQTTAsync_subscribe(MQTTAsync handle, const char* topic, int qos
   */
 LIBMQTT_API int MQTTAsync_subscribeMany(MQTTAsync handle, int count, char* const* topic, int* qos, MQTTAsync_responseOptions* response);
 
+// comment by Clark::    可能包含正则表达式             ::2020-12-21
 /**
   * This function attempts to remove an existing subscription made by the
   * specified client.

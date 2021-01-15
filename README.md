@@ -8,7 +8,9 @@ This repository contains the source code for the [Eclipse Paho](http://eclipse.o
 
 This code builds libraries which enable applications to connect to an [MQTT](http://mqtt.org) broker to publish messages, and to subscribe to topics and receive published messages.
 
-Synchronous and various asynchronous programming models are supported.
+<u>Synchronous and various asynchronous programming models are supported.</u>
+
+HiveMQ introduction to MQTT]
 
 ## Information About MQTT
 
@@ -122,7 +124,7 @@ On Debian based systems this would mean that the following packages have to be i
 apt-get install build-essential gcc make cmake cmake-gui cmake-curses-gui
 ```
 
-Also, in order to build a debian package from the source code, the following packages have to be installed
+Also, in order to build a debian package[^deb包] from the source code, the following packages have to be installed
 
 ```
 apt-get install fakeroot fakeroot devscripts dh-make lsb-release
@@ -156,7 +158,7 @@ MQTT_TEST_PROXY | tcp://localhost:1883 | Hostname of the test proxy to use
 MQTT_SSL_HOSTNAME | localhost | Hostname of a test SSL MQTT broker to use
 PAHO_BUILD_DEB_PACKAGE | FALSE | Build debian package
 
-Using these variables CMake can be used to generate your Ninja or Make files. Using CMake, building out-of-source is the default. Therefore it is recommended to invoke all build commands inside your chosen build directory but outside of the source tree.
+Using these variables CMake can be used to generate your Ninja or Make files. Using CMake, building out-of-source[^在源码外编译] is the default. Therefore it is recommended to invoke all build commands inside your chosen build directory but outside of the source tree.
 
 An example build session targeting the build platform could look like this:
 

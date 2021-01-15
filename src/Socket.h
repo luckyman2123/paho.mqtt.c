@@ -113,7 +113,7 @@ typedef struct
 	int maxfdp1; /**< max descriptor used +1 (again see select doc) */
 	List* clientsds; /**< list of client socket descriptors */
 	ListElement* cur_clientsds; /**< current client socket descriptor (iterator) */
-	List* connect_pending; /**< list of sockets for which a connect is pending */
+	List* connect_pending; /**< list of sockets for which a connect is pending */		// comment by Clark:: pend: 悬而未决  ::2020-12-22
 	List* write_pending; /**< list of sockets for which a write is pending */
 	fd_set pending_wset; /**< socket pending write set for select */
 } Sockets;

@@ -315,7 +315,7 @@ exit:
 }
 
 
-
+// comment by Clark:: 一个消息一个文件的形式  ::2020-12-22
 /** Delete a persisted message from the client persistence directory.
  *  See ::Persistence_remove
  */
@@ -846,6 +846,18 @@ int keysUnix(char *dirname, char ***keys, int *nkeys)
 					rc = MQTTCLIENT_PERSISTENCE_ERROR;
 					goto exit;
 				}
+				// comment by Clark:: S_ISREG: 是否一个常规文件         ::2020-12-22
+				/**
+				 *  S_ISLNK(st_mode)：是否是一个连接.
+				 *	S_ISREG(st_mode)：是否是一个常规文件.
+				 *	S_ISDIR(st_mode)：是否是一个目录
+				 *	S_ISCHR(st_mode)：是否是一个字符设备.
+				 *	S_ISBLK(st_mode)：是否是一个块设备
+				 *	S_ISFIFO(st_mode)：是否 是一个FIFO文件.
+				 *	S_ISSOCK(st_mode)：是否是一个SOCKET文件 
+				*/
+
+				// comment by Clark:: temp构造出来只是为了判断此文件是否为一个普通文件            ::2020-12-22
 				if (lstat(temp, &stat_info) == 0 && S_ISREG(stat_info.st_mode))
 				{
 					if ((fkeys[i] = malloc(strlen(dir_entry->d_name) + 1)) == NULL)
@@ -856,6 +868,8 @@ int keysUnix(char *dirname, char ***keys, int *nkeys)
 						goto exit;
 					}
 					strcpy(fkeys[i], dir_entry->d_name);
+
+					// comment by Clark:: 去掉文件结尾的后缀.msg  ::2020-12-22
 					ptraux = strstr(fkeys[i], MESSAGE_FILENAME_EXTENSION);
 					if ( ptraux != NULL )
 						*ptraux = '\0' ;
