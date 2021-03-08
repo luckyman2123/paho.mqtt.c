@@ -19,7 +19,7 @@
 #if !defined(HEAP_H)
 #define HEAP_H
 
-// comment by Clark:: ¸ßÐÔÄÜ  ::2020-12-26
+// comment by Clark:: é«˜æ€§èƒ½  ::2020-12-26
 
 #if defined(HIGH_PERFORMANCE)
 #define NO_HEAP_TRACKING 1

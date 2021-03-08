@@ -141,8 +141,8 @@ int Log_initialize(Log_nameValue* info)
 		goto exit;
 	trace_queue_size = trace_settings.max_trace_entries;
 
-	// comment by Clark:: Õâ¸öÊÇÍ¨¹ı export »·¾³±äÁ¿À´È·¶¨Òª²»Òª¼ÓÔØ  ::2020-12-26
-	// comment by Clark:: ÈÕÖ¾ÓĞ±¸·İÎÄ¼ş, ¼Óºó×º.0  ::2020-12-26
+	// comment by Clark:: è¿™ä¸ªæ˜¯é€šè¿‡ export ç¯å¢ƒå˜é‡æ¥ç¡®å®šè¦ä¸è¦åŠ è½½  ::2020-12-26
+	// comment by Clark:: æ—¥å¿—æœ‰å¤‡ä»½æ–‡ä»¶, åŠ åç¼€.0  ::2020-12-26
 	if ((envval = getenv("MQTT_C_CLIENT_TRACE")) != NULL && strlen(envval) > 0)
 	{
 		if (strcmp(envval, "ON") == 0 || (trace_destination = fopen(envval, "w")) == NULL)
@@ -169,14 +169,14 @@ int Log_initialize(Log_nameValue* info)
 		}
 	}
 	
-	// comment by Clark:: ÈÕÖ¾ÎÄ¼şÃ¿¸öÎÄ¼ş×î´óÓĞ¶àÉÙĞĞ  ::2020-12-26
+	// comment by Clark:: æ—¥å¿—æ–‡ä»¶æ¯ä¸ªæ–‡ä»¶æœ€å¤§æœ‰å¤šå°‘è¡Œ  ::2020-12-26
 	if ((envval = getenv("MQTT_C_CLIENT_TRACE_MAX_LINES")) != NULL && strlen(envval) > 0)
 	{
 		max_lines_per_file = atoi(envval);
 		if (max_lines_per_file <= 0)
-			max_lines_per_file = 1000;			// comment by Clark:: ÓĞÒ»¸öÄ¬ÈÏÖµ  ::2020-12-26
+			max_lines_per_file = 1000;			// comment by Clark:: æœ‰ä¸€ä¸ªé»˜è®¤å€¼  ::2020-12-26
 	}
-	if ((envval = getenv("MQTT_C_CLIENT_TRACE_LEVEL")) != NULL && strlen(envval) > 0)// comment by Clark:: ²»Îª¿Õ, ÈÕÖ¾µÈ¼¶  ::2020-12-26
+	if ((envval = getenv("MQTT_C_CLIENT_TRACE_LEVEL")) != NULL && strlen(envval) > 0)// comment by Clark:: ä¸ä¸ºç©º, æ—¥å¿—ç­‰çº§  ::2020-12-26
 	{
 		if (strcmp(envval, "MAXIMUM") == 0 || strcmp(envval, "TRACE_MAXIMUM") == 0)
 			trace_settings.trace_level = TRACE_MAXIMUM;
@@ -192,7 +192,7 @@ int Log_initialize(Log_nameValue* info)
 	Log_output(TRACE_MINIMUM, "=========================================================");
 	Log_output(TRACE_MINIMUM, "                   Trace Output");
 
-	// comment by Clark:: ´òÓ¡³ö°æ±¾ĞÅÏ¢:  MQTTAsync_getVersionInfo ::2020-12-26
+	// comment by Clark:: æ‰“å°å‡ºç‰ˆæœ¬ä¿¡æ¯:  MQTTAsync_getVersionInfo ::2020-12-26
 	if (info)
 	{
 		while (info->name)
@@ -207,7 +207,7 @@ int Log_initialize(Log_nameValue* info)
 	{
 		FILE* vfile;
 
-		if ((vfile = fopen("/proc/version", "r")) != NULL)			// comment by Clark:: ´òÓ¡ÄÚºËÖĞµÄÄÚÈİ×öÊ²Ã´  ::2020-12-26
+		if ((vfile = fopen("/proc/version", "r")) != NULL)			// comment by Clark:: æ‰“å°å†…æ ¸ä¸­çš„å†…å®¹åšä»€ä¹ˆ  ::2020-12-26
 		{
 			int len;
 
@@ -270,10 +270,10 @@ static traceEntry* Log_pretrace(void)
 	traceEntry *cur_entry = NULL;
 
 	/* calling ftime/gettimeofday seems to be comparatively expensive, so we need to limit its use */
-	// comment by Clark:: ¼õÉÙgettimeofdayµÄµ÷ÓÃ, 20´Î²ÅÕæÕıµ÷ÓÃÒ»´Î  ::2020-12-26
+	// comment by Clark:: å‡å°‘gettimeofdayçš„è°ƒç”¨, 20æ¬¡æ‰çœŸæ­£è°ƒç”¨ä¸€æ¬¡  ::2020-12-26
 	if (++sametime_count % 20 == 0)
 	{
-	// comment by Clark:: gettimeofday Ê¹ÓÃCÓïÑÔ±àĞ´³ÌĞòĞèÒª»ñµÃµ±Ç°¾«È·Ê±¼ä£¨1970Äê1ÔÂ1ÈÕµ½ÏÖÔÚµÄÊ±¼ä£© ::2020-12-26
+	// comment by Clark:: gettimeofday ä½¿ç”¨Cè¯­è¨€ç¼–å†™ç¨‹åºéœ€è¦è·å¾—å½“å‰ç²¾ç¡®æ—¶é—´ï¼ˆ1970å¹´1æœˆ1æ—¥åˆ°ç°åœ¨çš„æ—¶é—´ï¼‰ ::2020-12-26
 #if defined(GETTIMEOFDAY)
 		gettimeofday(&now_ts, NULL);
 		if (now_ts.tv_sec != last_ts.tv_sec || now_ts.tv_usec != last_ts.tv_usec)
@@ -319,7 +319,7 @@ static traceEntry* Log_pretrace(void)
 exit:
 	return cur_entry;
 }
-// comment by Clark:: ¸ñÊ½»¯ÈÕÖ¾  ::2020-12-26
+// comment by Clark:: æ ¼å¼åŒ–æ—¥å¿—  ::2020-12-26
 static char* Log_formatTraceEntry(traceEntry* cur_entry)
 {
 	struct tm *timeinfo;
@@ -356,7 +356,7 @@ static char* Log_formatTraceEntry(traceEntry* cur_entry)
 	return msg_buf;
 }
 
-// comment by Clark:: ÀûÓÃÖØ¶¨Ïò¼¼Êõ  ::2020-12-26
+// comment by Clark:: åˆ©ç”¨é‡å®šå‘æŠ€æœ¯  ::2020-12-26
 static void Log_output(enum LOG_LEVELS log_level, const char *msg)
 {
 	if (trace_destination)
@@ -404,10 +404,10 @@ static void Log_trace(enum LOG_LEVELS log_level, const char *buf)
 	if (trace_queue == NULL)
 		return;
 
-	cur_entry = Log_pretrace();// comment by Clark:: µÃµ½Ò»¸öÎ´Ê¹ÓÃµÄ entry, È¡Ãû×ÖÓĞ½²¾¿ pretrace, posttrace  ::2020-12-26
+	cur_entry = Log_pretrace();// comment by Clark:: å¾—åˆ°ä¸€ä¸ªæœªä½¿ç”¨çš„ entry, å–åå­—æœ‰è®²ç©¶ pretrace, posttrace  ::2020-12-26
 
 	memcpy(&(cur_entry->ts), &now_ts, sizeof(now_ts));
-	cur_entry->sametime_count = sametime_count;		// comment by Clark:: ¼õÉÙÁËgettimeofdayµÄµ÷ÓÃ, Í¨¹ı´ËÊı¾İÀ´Çø·ÖÏàÍ¬µÄÊ±¼ä  ::2020-12-26
+	cur_entry->sametime_count = sametime_count;		// comment by Clark:: å‡å°‘äº†gettimeofdayçš„è°ƒç”¨, é€šè¿‡æ­¤æ•°æ®æ¥åŒºåˆ†ç›¸åŒçš„æ—¶é—´  ::2020-12-26
 
 	cur_entry->has_rc = 2;
 	strncpy(cur_entry->name, buf, sizeof(cur_entry->name));
@@ -435,7 +435,7 @@ void Log(enum LOG_LEVELS log_level, int msgno, const char *format, ...)
 
 		/* we're using a static character buffer, so we need to make sure only one thread uses it at a time */
 		Thread_lock_mutex(log_mutex);
-		if (format == NULL && (temp = Messages_get(msgno, log_level)) != NULL)// comment by Clark:: ÈôÎ´Ö¸¶¨´òÓ¡¸ñÊ½£¬Ôò¸ù¾İ ÏûÏ¢µÄidºÅ£¬»ñÈ¡Ä¬ÈÏµÄ´òÓ¡¸ñÊ½  ::2020-12-26
+		if (format == NULL && (temp = Messages_get(msgno, log_level)) != NULL)// comment by Clark:: è‹¥æœªæŒ‡å®šæ‰“å°æ ¼å¼ï¼Œåˆ™æ ¹æ® æ¶ˆæ¯çš„idå·ï¼Œè·å–é»˜è®¤çš„æ‰“å°æ ¼å¼  ::2020-12-26
 			format = temp;
 
 		va_start(args, format);

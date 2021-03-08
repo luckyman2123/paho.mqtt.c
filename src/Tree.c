@@ -55,7 +55,7 @@ void TreeInitializeNoMalloc(Tree* aTree, int(*compare)(void*, void*, int))
 	memset(aTree, '\0', sizeof(Tree));
 	aTree->heap_tracking = 1;
 	aTree->index[0].compare = compare;
-	aTree->indexes = 1;			// comment by Clark:: 1ÊÇ¸ù½Úµã??   ::2020-12-27
+	aTree->indexes = 1;			// comment by Clark:: 1æ˜¯æ ¹èŠ‚ç‚¹??   ::2020-12-27
 }
 
 /**
@@ -99,7 +99,7 @@ void TreeFree(Tree* aTree)
 #endif
 
 
-// comment by Clark:: ºìºÚÊ÷, ·ÇºÚ¼´ºì  ::2020-12-26
+// comment by Clark:: çº¢é»‘æ ‘, éé»‘å³çº¢  ::2020-12-26
 int isRed(Node* aNode)
 {
 	return (aNode != NULL) && (aNode->red);

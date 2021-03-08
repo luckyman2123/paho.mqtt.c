@@ -88,7 +88,7 @@ static int Internal_heap_unlink(char* file, int line, void* p);
 static void HeapScan(enum LOG_LEVELS log_level);
 
 
-// comment by Clark:: hit: Åöµ½ weird: ¹ÖÒìµÄ  apart from:¡¡³ý...Ö®Íâ heap_roundup: ½«size ±äÎª 4 µÄÕûÊý±¶ ::2020-12-27
+// comment by Clark:: hit: ç¢°åˆ° weird: æ€ªå¼‚çš„  apart from:ã€€é™¤...ä¹‹å¤– heap_roundup: å°†size å˜ä¸º 4 çš„æ•´æ•°å€ ::2020-12-27
 /**
  * Round allocation size up to a multiple of the size of an int.  Apart from possibly reducing fragmentation,
  * on the old v3 gcc compilers I was hitting some weird behaviour, which might have been errors in
@@ -114,11 +114,11 @@ static size_t Heap_roundup(size_t size)
  */
 static int ptrCompare(void* a, void* b, int value)
 {
-	a = ((storageElement*)a)->ptr;			// comment by Clark:: ½ÚÊ¡±äÁ¿£¬ÓÃÔ­À´µÄ±äÁ¿  ::2020-12-27
+	a = ((storageElement*)a)->ptr;			// comment by Clark:: èŠ‚çœå˜é‡ï¼Œç”¨åŽŸæ¥çš„å˜é‡  ::2020-12-27
 	if (value)
 		b = ((storageElement*)b)->ptr;
 
-	return (a > b) ? -1 : (a == b) ? 0 : 1;		// comment by Clark:: ¾«¼ò  ::2020-12-27
+	return (a > b) ? -1 : (a == b) ? 0 : 1;		// comment by Clark:: ç²¾ç®€  ::2020-12-27
 }
 
 /*
@@ -156,7 +156,7 @@ static void Heap_check(char* string, void* ptr)
  * @param size the size of the item to be allocated
  * @return pointer to the allocated item, or NULL if there was an error
  */
-void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file¶¼Ö¸ tree.c , ÕâÓÐÒâË¼Ã´  ::2020-12-27
+void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: fileéƒ½æŒ‡ tree.c , è¿™æœ‰æ„æ€ä¹ˆ  ::2020-12-27
 {
 	storageElement* s = NULL;
 	size_t space = sizeof(storageElement);
@@ -181,7 +181,7 @@ void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file¶¼
 	}
 	memset(s->file, 0, sizeof(filenamelen));
 
-	space += filenamelen;			// comment by Clark:: ¼ÇÂ¼¿Õ¼ä´óÐ¡  ::2020-12-27
+	space += filenamelen;			// comment by Clark:: è®°å½•ç©ºé—´å¤§å°  ::2020-12-27
 	strcpy(s->file, file);
 #if defined(HEAP_STACK)
 #define STACK_LEN 300
@@ -207,15 +207,15 @@ void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file¶¼
 	memset(s->ptr, 0, size + 2*sizeof(eyecatcherType));
 	space += size + 2*sizeof(eyecatcherType);
 
-	// comment by Clark:: Ç°ºóÒ»¹²Á½¸ö eyecatcher, ÕæÕýµÄÄÚÈÝÓÃ eyecatcher °üÎ§ÁË  ::2020-12-27
+	// comment by Clark:: å‰åŽä¸€å…±ä¸¤ä¸ª eyecatcher, çœŸæ­£çš„å†…å®¹ç”¨ eyecatcher åŒ…å›´äº†  ::2020-12-27
 	*(eyecatcherType*)(s->ptr) = eyecatcher; /* start eyecatcher */
 	*(eyecatcherType*)(((char*)(s->ptr)) + (sizeof(eyecatcherType) + size)) = eyecatcher; /* end eyecatcher */
 	Log(TRACE_MAX, -1, "Allocating %d bytes in heap at file %s line %d ptr %p\n", (int)size, file, line, s->ptr);
 	TreeAdd(&heap, s, space);	
-	state.current_size += size;	// comment by Clark:: ¼ÇÂ¼ÒÑmallocµÄ¿Õ¼ä´óÐ¡,Õâ¸ösizeÊÇÕæÕýµÄÐÅÏ¢ÄÚÈÝ,  Í¬Ê±¼ÇÂ¼ÉêÇë¹ýµÄ×î´ó¿Õ¼ä´óÐ¡ max_size   ::2020-12-27
+	state.current_size += size;	// comment by Clark:: è®°å½•å·²mallocçš„ç©ºé—´å¤§å°,è¿™ä¸ªsizeæ˜¯çœŸæ­£çš„ä¿¡æ¯å†…å®¹,  åŒæ—¶è®°å½•ç”³è¯·è¿‡çš„æœ€å¤§ç©ºé—´å¤§å° max_size   ::2020-12-27
 	if (state.current_size > state.max_size)
 		state.max_size = state.current_size;
-	rc = ((eyecatcherType*)(s->ptr)) + 1;	/* skip start eyecatcher */			// comment by Clark:: Ìø¹ý¿ªÊ¼µÄ eyecatcher, ·µ»Ø tree node  ::2020-12-27
+	rc = ((eyecatcherType*)(s->ptr)) + 1;	/* skip start eyecatcher */			// comment by Clark:: è·³è¿‡å¼€å§‹çš„ eyecatcher, è¿”å›ž tree node  ::2020-12-27
 exit:
 	Thread_unlock_mutex(heap_mutex);
 	return rc;
@@ -229,7 +229,7 @@ static void checkEyecatchers(char* file, int line, void* p, size_t size)
 	eyecatcherType us;
 	static const char *msg = "Invalid %s eyecatcher %d in heap item at file %s line %d";
 
-	if ((us = *--sp) != eyecatcher)				// comment by Clark:: ÎªÊ²Ã´ÒªÏÈ¼õ1ÄØ, ¿ªÊ¼ºÍ½áÎ²µÄÁ½¸ö eyecatcher ¾ùÒª¼ì²â  ::2020-12-27
+	if ((us = *--sp) != eyecatcher)				// comment by Clark:: ä¸ºä»€ä¹ˆè¦å…ˆå‡1å‘¢, å¼€å§‹å’Œç»“å°¾çš„ä¸¤ä¸ª eyecatcher å‡è¦æ£€æµ‹  ::2020-12-27
 		Log(LOG_ERROR, 13, msg, "start", us, file, line);
 
 	cp += size;
@@ -471,7 +471,7 @@ int HeapDump(FILE* file)
 	{
 		storageElement* s = (storageElement*)(current->content);
 
-		if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)		// comment by Clark:: &(s->ptr): µØÖ·µÄµØÖ·ÊÇÊ²Ã´??, ÏÈÐ´ÄÚÈÝµÄµØÖ·, Ð´³É¹¦Ö®ºó, ÔÙÐ´ size ´óÐ¡£¬È»ºóÔÙÊÇÊµ¼ÊµÄÄÚÈÝs->ptr  ::2020-12-27
+		if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)		// comment by Clark:: &(s->ptr): åœ°å€çš„åœ°å€æ˜¯ä»€ä¹ˆ??, å…ˆå†™å†…å®¹çš„åœ°å€, å†™æˆåŠŸä¹‹åŽ, å†å†™ size å¤§å°ï¼Œç„¶åŽå†æ˜¯å®žé™…çš„å†…å®¹s->ptr  ::2020-12-27
 			rc = -1;
 		else if (fwrite(&(current->size), sizeof(current->size), 1, file) != 1)
 			rc = -1;

@@ -53,7 +53,7 @@ extern ClientStates* bstate;
  */
 size_t MQTTProtocol_addressPort(const char* uri, int* port, const char **topic, int default_port)
 {
-	// comment by Clark:: ÄæÏò½âÎö  ::2020-12-26
+	// comment by Clark:: é€†å‘è§£æ  ::2020-12-26
 	char* colon_pos = strrchr(uri, ':'); /* reverse find to allow for ':' in IPv6 addresses */
 	char* buf = (char*)uri;
 	size_t len;
@@ -95,7 +95,7 @@ size_t MQTTProtocol_addressPort(const char* uri, int* port, const char **topic, 
 }
 
 
-// comment by Clark:: hexadecimal  Ó¢ [,heks?'des?m(?)l]  ÃÀ [,h?ks?'d?s?ml]  adj. Ê®Áù½øÖÆµÄ  n. Ê®Áù½øÖÆ ::2020-12-26
+// comment by Clark:: hexadecimal  è‹± [,heks?'des?m(?)l]  ç¾ [,h?ks?'d?s?ml]  adj. åå…­è¿›åˆ¶çš„  n. åå…­è¿›åˆ¶ ::2020-12-26
 /**
  * Allow user or password characters to be expressed in the form of %XX, XX being the
  * hexadecimal value of the character. This will avoid problems when a user code or a password
