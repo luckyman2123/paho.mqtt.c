@@ -246,6 +246,7 @@ int MQTTPacket_send_subscribe(List* topics, List* qoss, MQTTSubscribe_options* o
 	if (client->MQTTVersion >= MQTTVERSION_5)
 		datalen += MQTTProperties_len(props);
 
+	// comment by Clark:: 定义两个指定, data为缓存的原点  ::2021-3-23
 	ptr = data = malloc(datalen);
 	if (ptr == NULL)
 		goto exit;

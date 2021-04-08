@@ -24,6 +24,7 @@
 #define URI_WS  "ws://"
 #define URI_WSS "wss://"
 
+// comment by Clark::  线程状态 ::2021-3-23
 enum MQTTAsync_threadStates
 {
 	STOPPED, STARTING, RUNNING, STOPPING
@@ -129,8 +130,8 @@ typedef struct MQTTAsync_struct
 	int automaticReconnect;
 	int minRetryInterval;
 	int maxRetryInterval;
-	int serverURIcount;
-	char** serverURIs;
+	int serverURIcount;	// comment by Clark:: uri的个数  ::2021-3-23
+	char** serverURIs;	// comment by Clark:: 存储 uri  ::2021-3-23
 	int connectTimeout;
 
 	int currentInterval;
@@ -145,6 +146,7 @@ typedef struct MQTTAsync_struct
 
 } MQTTAsyncs;
 
+// comment by Clark:: 队列命令  ::2021-3-23
 typedef struct
 {
 	MQTTAsync_command command;

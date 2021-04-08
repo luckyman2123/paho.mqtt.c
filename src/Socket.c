@@ -72,6 +72,8 @@ static fd_set wset;
  * @param sock the socket to set non-blocking
  * @return TCP call error code
  */
+
+// comment by Clark:: 通过 fcntl 系统调用, 将一个 文件描述符设置为非阻塞式的 io  ::2021-3-24
 int Socket_setnonblocking(int sock)
 {
 	int rc;
@@ -167,6 +169,7 @@ void Socket_outTerminate(void)
  * Add a socket to the list of socket to check with select
  * @param newSd the new socket to add
  */
+// comment by Clark:: 增加新的 socket fd ::2021-3-24
 int Socket_addSocket(int newSd)
 {
 	int rc = 0;
@@ -174,7 +177,10 @@ int Socket_addSocket(int newSd)
 	FUNC_ENTRY;
 	if (ListFindItem(mod_s.clientsds, &newSd, intcompare) == NULL) /* make sure we don't add the same socket twice */
 	{
-		if (mod_s.clientsds->count >= FD_SETSIZE)
+		// comment by Clark:: #define	FD_SETSIZE		__FD_SETSIZE  ::2021-3-23
+		// comment by Clark:: #define __FD_SETSIZE	1024  ::2021-3-23
+		// comment by Clark:: 文件描述符是否超过1024  ::2021-3-24
+		if (mod_s.clientsds->count >= FD_SETSIZE)		
 		{
 			Log(LOG_ERROR, -1, "addSocket: exceeded FD_SETSIZE %d", FD_SETSIZE);
 			rc = SOCKET_ERROR;
@@ -196,7 +202,10 @@ int Socket_addSocket(int newSd)
 				goto exit;
 			}
 			FD_SET(newSd, &(mod_s.rset_saved));
+			// comment by Clark:: 比较最大的 fd号  ::2021-3-24
 			mod_s.maxfdp1 = max(mod_s.maxfdp1, newSd + 1);
+			
+			// comment by Clark:: 设置为非阻塞式的文件描述符                ::2021-3-24
 			rc = Socket_setnonblocking(newSd);
 			if (rc == SOCKET_ERROR)
 				Log(LOG_ERROR, -1, "addSocket: setnonblocking");
@@ -224,10 +233,12 @@ int isReady(int socket, fd_set* read_set, fd_set* write_set)
 	int rc = 1;
 
 	FUNC_ENTRY;
+	// comment by Clark:: 当可写时, 即 socket 在write_set中时, 则将其从 connect_pending 中移除  ::2021-3-24
 	if  (ListFindItem(mod_s.connect_pending, &socket, intcompare) && FD_ISSET(socket, write_set))
 		ListRemoveItem(mod_s.connect_pending, &socket, intcompare);
 	else
 		rc = FD_ISSET(socket, read_set) && FD_ISSET(socket, write_set) && Socket_noPendingWrites(socket);
+		// comment by Clark::  在read_set/write_set,且不在追加中      ::2021-3-24
 	FUNC_EXIT_RC(rc);
 	return rc;
 }
@@ -254,11 +265,13 @@ int Socket_getReadySocket(int more_work, struct timeval *tp, mutex_type mutex, i
 	if (mod_s.clientsds->count == 0)
 		goto exit;
 
+	// comment by Clark:: 是否需要延迟, 如果有很多任务, 则不延时  ::2021-3-24
 	if (more_work)
 		timeout = zero;
 	else if (tp)
 		timeout = *tp;
 
+	// comment by Clark:: 有准备好的 socket 即跳出  ::2021-3-24
 	while (mod_s.cur_clientsds != NULL)
 	{
 		if (isReady(*((int*)(mod_s.cur_clientsds->content)), &(mod_s.rset), &wset))
@@ -266,6 +279,7 @@ int Socket_getReadySocket(int more_work, struct timeval *tp, mutex_type mutex, i
 		ListNextElement(mod_s.clientsds, &mod_s.cur_clientsds);
 	}
 
+	// comment by Clark:: 当没有准备好的 socket 的时，执行下面 if 语句块中的句子  ::2021-3-24
 	if (mod_s.cur_clientsds == NULL)
 	{
 		int rc1;
@@ -284,6 +298,7 @@ int Socket_getReadySocket(int more_work, struct timeval *tp, mutex_type mutex, i
 		}
 		Log(TRACE_MAX, -1, "Return code %d from read select", *rc);
 
+		// comment by Clark:: 读已经测试完成, 测试能不能写 ??  ::2021-3-24
 		if (Socket_continueWrites(&pwset, &sock) == SOCKET_ERROR)
 		{
 			*rc = SOCKET_ERROR;
@@ -311,6 +326,8 @@ int Socket_getReadySocket(int more_work, struct timeval *tp, mutex_type mutex, i
 			int cursock = *((int*)(mod_s.cur_clientsds->content));
 			if (isReady(cursock, &(mod_s.rset), &wset))
 				break;
+
+			// comment by Clark::  加入真正可操作链表		     	::2021-3-24
 			ListNextElement(mod_s.clientsds, &mod_s.cur_clientsds);
 		}
 	}
@@ -357,6 +374,7 @@ int Socket_getch(int socket, char* c)
 		rc = SOCKET_ERROR; 	/* The return value from recv is 0 when the peer has performed an orderly shutdown. */
 	else if (rc == 1)
 	{
+		// comment by Clark:: 若成功, 则将此 字符传入 socket 相关联的 queue中  ::2021-3-24
 		SocketBuffer_queueChar(socket, *c);
 		rc = TCPSOCKET_COMPLETE;
 	}
@@ -404,9 +422,10 @@ char *Socket_getdata(int socket, size_t bytes, size_t* actual_len, int *rc)
 	else
 		*actual_len += *rc;
 
+	// comment by Clark:: 当实际读到的数据字节数与想读的数据字节数相等时, 则 complete socket  ::2021-3-24
 	if (*actual_len == bytes)
 		SocketBuffer_complete(socket);
-	else /* we didn't read the whole packet */
+	else /* we didn't read the whole packet */// comment by Clark:: 挂起, 可能下一轮再读  ::2021-3-24
 	{
 		SocketBuffer_interrupted(socket, *actual_len);
 		Log(TRACE_MAX, -1, "%d bytes expected but %d bytes now received", (int)bytes, (int)*actual_len);
@@ -480,6 +499,7 @@ for testing purposes only!
 	else
 	{
 #endif
+	// comment by Clark:: readv和writev函数用于在一次函数调用中读、写多个非连续缓冲区。有时也将这两个函数称为散布读(scatter read)和聚集写(gather write)。  ::2021-3-23
 	rc = writev(socket, iovecs, count);
 	if (rc == SOCKET_ERROR)
 	{
@@ -525,6 +545,7 @@ int Socket_putdatas(int socket, char* buf0, size_t buf0len, PacketBuffers bufs)
 		goto exit;
 	}
 
+	// comment by Clark:: 初始化待写 iovecs数组  ::2021-3-23
 	for (i = 0; i < bufs.count; i++)
 		total += bufs.buflens[i];
 
@@ -540,10 +561,12 @@ int Socket_putdatas(int socket, char* buf0, size_t buf0len, PacketBuffers bufs)
 
 	if ((rc = Socket_writev(socket, iovecs, bufs.count+1, &bytes)) != SOCKET_ERROR)
 	{
+		// comment by Clark:: 写完成  ::2021-3-23
 		if (bytes == total)
 			rc = TCPSOCKET_COMPLETE;
 		else
 		{
+			// comment by Clark:: 一次未完成写操作, 仍有剩余部分数据待写入socket, 将执行 socketBuffer_pendingWrite, 同时状态设置为被打断  ::2021-3-23
 			int* sockmem = (int*)malloc(sizeof(int));
 
 			if (!sockmem)
@@ -556,15 +579,20 @@ int Socket_putdatas(int socket, char* buf0, size_t buf0len, PacketBuffers bufs)
 #if defined(OPENSSL)
 			SocketBuffer_pendingWrite(socket, NULL, bufs.count+1, iovecs, frees1, total, bytes);
 #else
+			// comment by Clark:: 追加写     ::2021-3-23
 			SocketBuffer_pendingWrite(socket, bufs.count+1, iovecs, frees1, total, bytes);
 #endif
+			// comment by Clark:: sockmem 仅为得到 socket 的指针   ::2021-3-23
 			*sockmem = socket;
+			// comment by Clark:: 将此sockmem 加入链表        ::2021-3-23
 			if (!ListAppend(mod_s.write_pending, sockmem, sizeof(int)))
 			{
+				// comment by Clark:: 加入链表后, 可以删除此部分的空间                  ::2021-3-23
 				free(sockmem);
 				rc = PAHO_MEMORY_ERROR;
 				goto exit;
 			}
+			// comment by Clark:: 加入监听文件描述符            ::2021-3-23
 			FD_SET(socket, &(mod_s.pending_wset));
 			rc = TCPSOCKET_INTERRUPTED;
 		}
@@ -987,6 +1015,8 @@ exit:
  *  @param sock in case of a socket error contains the affected socket
  *  @return completion code, 0 or SOCKET_ERROR
  */
+
+ // comment by Clark:: 继续写  ::2021-3-23
 int Socket_continueWrites(fd_set* pwset, int* sock)
 {
 	int rc1 = 0;
@@ -999,7 +1029,8 @@ int Socket_continueWrites(fd_set* pwset, int* sock)
 		int rc = 0;
 
 		if (FD_ISSET(socket, pwset) && ((rc = Socket_continueWrite(socket)) != 0))
-		{
+		{	
+			// comment by Clark:: 从待写链表中移除           ::2021-3-23
 			if (!SocketBuffer_writeComplete(socket))
 				Log(LOG_SEVERE, -1, "Failed to remove pending write from socket buffer list");
 			FD_CLR(socket, &(mod_s.pending_wset));

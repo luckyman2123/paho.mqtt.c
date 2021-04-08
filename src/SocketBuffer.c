@@ -51,6 +51,7 @@ static socket_queue* def_queue;
 /**
  * List of queued input buffers
  */
+// comment by Clark:: socket 输入队列  ::2021-3-24
 static List* queues;
 
 /**
@@ -84,23 +85,21 @@ int SocketBuffer_newDefQ(void)
 {
 	int rc = PAHO_MEMORY_ERROR;
 
-	def_queue = malloc(sizeof(socket_queue));
+	def_queue = malloc(sizeof(socket_queue));	// comment by Clark:: 成功??, malloc 没有清空, malloc 是自定义的 mymalloc   ::2020-12-22
 	if (def_queue)
 	{
 		def_queue->buflen = 1000;
-		def_queue->buf = malloc(def_queue->buflen);
-		if (def_queue->buf)		// comment by Clark:: 成功??   ::2020-12-22
+		def_queue->buf = malloc(def_queue->buflen);		// comment by Clark:: def_queue的 buf 没有被清空, 其它的均为0  ::2021-3-24
+		if (def_queue->buf)		// comment by Clark:: 成功??, malloc 没有清空, malloc 是自定义的 mymalloc   ::2020-12-22
 		{
 			def_queue->socket = def_queue->index = 0;
-			def_queue->buflen = def_queue->datalen = def_queue->headerlen = 0;
+			def_queue->buflen = def_queue->datalen = def_queue->headerlen = 0;  // comment by Clark:: buflen 为什么要为0  ::2021-3-24
 			rc = 0;
 		}
 	}
 	return rc;
 }
 
-
-// comment by Clark::   ::2020-12-22
 
 /**
  * Initialize the socketBuffer module
@@ -179,6 +178,8 @@ void SocketBuffer_cleanup(int socket)
  * @param actual_len the actual length returned
  * @return the actual data
  */
+
+// comment by Clark:: 此接口并非是从 socket中读取数据, 而是预约处理好数据存储的缓存  ::2021-3-24
 char* SocketBuffer_getQueuedData(int socket, size_t bytes, size_t* actual_len)
 {
 	socket_queue* queue = NULL;
@@ -186,17 +187,18 @@ char* SocketBuffer_getQueuedData(int socket, size_t bytes, size_t* actual_len)
 	FUNC_ENTRY;
 	if (ListFindItem(queues, &socket, socketcompare))
 	{  /* if there is queued data for this socket, add any data read to it */
+		// comment by Clark:: current指向当前的列表结点  ::2021-3-24
 		queue = (socket_queue*)(queues->current->content);
-		*actual_len = queue->datalen;
+		*actual_len = queue->datalen;				// comment by Clark:: acutal_len 是 socket 存储在 queue 中已经有的数据量，仍然需要在此基础上读取实际的 bytes数量,所以就需要扩展 对应的queue的buf大小来存储 bytes - acutal_len的数据  ::2021-3-24
 	}
 	else
 	{
 		*actual_len = 0;
 		queue = def_queue;
 	}
-	if (bytes > queue->buflen)
+	if (bytes > queue->buflen)		// comment by Clark:: buflen: buf的大小, datalen: 已经存储了多少数据  ::2021-3-24
 	{
-		if (queue->datalen > 0)
+		if (queue->datalen > 0)// comment by Clark:: 如果有数据, 则需要拷贝数据至新的内存  ::2021-3-24
 		{
 			void* newmem = malloc(bytes);
 
@@ -204,10 +206,11 @@ char* SocketBuffer_getQueuedData(int socket, size_t bytes, size_t* actual_len)
 			queue->buf = newmem;		// comment by Clark:: 重新创建缓存区，并且将buf指向新的缓冲区  ::2020-12-22
 			if (!newmem)
 				goto exit;
-			memcpy(newmem, queue->buf, queue->datalen);// comment by Clark:: 这个拷贝是啥意思  ::2020-12-22
+			memcpy(newmem, queue->buf, queue->datalen);// comment by Clark:: 这个拷贝是啥意思？  ::2020-12-22
 		}
 		else
-			queue->buf = realloc(queue->buf, bytes);
+			queue->buf = realloc(queue->buf, bytes);// comment by Clark:: 若没有数据, 则直接将数据空间扩展至 bytes  ::2021-3-24
+			
 		queue->buflen = bytes;
 	}
 exit:
@@ -255,11 +258,14 @@ exit:
  * @param socket the socket to get queued data for
  * @param actual_len the actual length of data that was read
  */
+
+// comment by Clark:: socket 读取被中断, 所以需要将从此 socket中读取到的数据放入 queue 队列中  ::2021-3-24
 void SocketBuffer_interrupted(int socket, size_t actual_len)
 {
 	socket_queue* queue = NULL;
 
 	FUNC_ENTRY;
+	// comment by Clark:: 如果在 queue 链表中有此 socket, 则不需要创建, 否则需要创建  ::2021-3-24
 	if (ListFindItem(queues, &socket, socketcompare))
 		queue = (socket_queue*)(queues->current->content);
 	else /* new saved queue */
@@ -270,11 +276,13 @@ void SocketBuffer_interrupted(int socket, size_t actual_len)
 		  If actual_len == 0 then we may not need to do anything - I'll leave that
 		  optimization for another time. */
 		queue->socket = socket;
+		// comment by Clark:: 将备用的queue 加入 queues  ::2021-3-24
 		ListAppend(queues, def_queue, sizeof(socket_queue)+def_queue->buflen);
+		// comment by Clark:: 重新创建出一个备用的 queue, 即 def_queue 的 buf 指向其它的位置  ::2021-3-24
 		SocketBuffer_newDefQ();
 	}
 	queue->index = 0;
-	queue->datalen = actual_len;
+	queue->datalen = actual_len;	// comment by Clark:: 为什么 actual_len 个的数据没有赋值给 queue中的 buf呢?  ::2021-3-24
 	FUNC_EXIT;
 }
 
@@ -290,10 +298,16 @@ char* SocketBuffer_complete(int socket)
 	if (ListFindItem(queues, &socket, socketcompare))
 	{
 		socket_queue* queue = (socket_queue*)(queues->current->content);
+		// comment by Clark:: 释放 def_queue 是干什么, 让 def_queue 指向 实际 socket 对应的 queue ?  ::2021-3-24
 		SocketBuffer_freeDefQ();
 		def_queue = queue;
+
+		// comment by Clark:: 从链表中分离出此 queue ::2021-3-24
 		ListDetach(queues, queue);
 	}
+
+	// comment by Clark:: 如果此socket 不存在链表中时, 则数据肯定是存储在临时的def_queue中，所以上面要清空 def_queue, 并把它指向真正的queue  ::2021-3-24
+	// comment by Clark:: 最终def_queue的buf 是真实数据所在的地方   ::2021-3-24
 	def_queue->socket = def_queue->index = 0;
 	def_queue->headerlen = def_queue->datalen = 0;
 	FUNC_EXIT;
@@ -366,6 +380,8 @@ int SocketBuffer_pendingWrite(int socket, int count, iobuf* iovecs, int* frees, 
 		rc = PAHO_MEMORY_ERROR;
 		goto exit;
 	}
+
+	// comment by Clark:: total: 所有的数据，bytes: 已经发出去的数据  ::2021-3-23
 	pw->socket = socket;
 #if defined(OPENSSL)
 	pw->ssl = ssl;
@@ -378,6 +394,7 @@ int SocketBuffer_pendingWrite(int socket, int count, iobuf* iovecs, int* frees, 
 		pw->iovecs[i] = iovecs[i];
 		pw->frees[i] = frees[i];
 	}
+	
 	ListAppend(&writes, pw, sizeof(pw) + total);
 exit:
 	FUNC_EXIT_RC(rc);
@@ -402,6 +419,9 @@ int pending_socketcompare(void* a, void* b)
  * @param socket the socket to get queued data for
  * @return pointer to the queued data or NULL
  */
+
+// comment by Clark:: 从 writes list 中得到相关的 数据信息  ::2021-3-23
+// comment by Clark:: pending_socketcompare 是对比条件  ::2021-3-23
 pending_writes* SocketBuffer_getWrite(int socket)
 {
 	ListElement* le = ListFindItem(&writes, &socket, pending_socketcompare);

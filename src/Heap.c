@@ -55,6 +55,7 @@ static pthread_mutex_t heap_mutex_store = PTHREAD_MUTEX_INITIALIZER;
 static mutex_type heap_mutex = &heap_mutex_store;
 #endif
 
+// comment by Clark:: 当前申请堆达到过的最大值与当前堆大小  ::2021-3-25
 static heap_info state = {0, 0}; /**< global heap state information */
 
 typedef double eyecatcherType;
@@ -69,10 +70,10 @@ typedef struct
 {
 	char* file;		/**< the name of the source file where the storage was allocated */
 	int line;		/**< the line no in the source file where it was allocated */
-	void* ptr;		/**< pointer to the allocated storage */
-	size_t size;    /**< size of the allocated storage */
+	void* ptr;		/**< pointer to the allocated storage */		// comment by Clark:: 内存分配的起始位置  ::2021-3-25
+	size_t size;    /**< size of the allocated storage */			// comment by Clark:: 内存分配的大小  ::2021-3-25
 #if defined(HEAP_STACK)
-	char* stack;
+	char* stack;		// comment by Clark:: 申请内存的堆栈信息  ::2021-3-25
 #endif
 } storageElement;
 
@@ -96,6 +97,7 @@ static void HeapScan(enum LOG_LEVELS log_level);
  * @param size the size actually needed
  * @return the rounded up size
  */
+ // comment by Clark:: 16的倍数  ::2021-3-25
 static size_t Heap_roundup(size_t size)
 {
 	static int multsize = 4*sizeof(int);
@@ -112,6 +114,8 @@ static size_t Heap_roundup(size_t size)
  * @param b pointer to the memory to free
  * @return boolean indicating whether a and b are equal
  */
+
+// comment by Clark:: value表示是用 b 来运算，还是 b 的 ptr 成员来计算  ::2021-3-25
 static int ptrCompare(void* a, void* b, int value)
 {
 	a = ((storageElement*)a)->ptr;			// comment by Clark:: 节省变量，用原来的变量  ::2020-12-27
@@ -159,7 +163,7 @@ static void Heap_check(char* string, void* ptr)
 void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file都指 tree.c , 这有意思么  ::2020-12-27
 {
 	storageElement* s = NULL;
-	size_t space = sizeof(storageElement);
+	size_t space = sizeof(storageElement);		// comment by Clark:: space记录 storageElement的大小,  ::2021-3-25
 	size_t filenamelen = strlen(file)+1;
 	void* rc = NULL;
 
@@ -181,10 +185,10 @@ void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file�
 	}
 	memset(s->file, 0, sizeof(filenamelen));
 
-	space += filenamelen;			// comment by Clark:: 记录空间大小  ::2020-12-27
+	space += filenamelen;			// comment by Clark:: 记录 文件名的空间大小  ::2020-12-27
 	strcpy(s->file, file);
 #if defined(HEAP_STACK)
-#define STACK_LEN 300
+#define STACK_LEN 300				// comment by Clark:: 300长度来记录空间  ::2021-3-25
 	if ((s->stack = malloc(STACK_LEN)) == NULL)
 	{
 		Log(LOG_ERROR, 13, errmsg);
@@ -192,7 +196,7 @@ void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file�
 		free(s);
 		goto exit;
 	}
-	memset(s->stack, 0, sizeof(filenamelen));
+	memset(s->stack, 0, sizeof(filenamelen));			// comment by Clark:: 这个地方是不是有问题,为什么只清空一部分空间  ::2021-3-25
 	StackTrace_get(Thread_getid(), s->stack, STACK_LEN);
 #endif
 	s->line = line;
@@ -204,14 +208,15 @@ void* mymalloc(char* file, int line, size_t size)			// comment by Clark:: file�
 		free(s);
 		goto exit;
 	}
-	memset(s->ptr, 0, size + 2*sizeof(eyecatcherType));
-	space += size + 2*sizeof(eyecatcherType);
+	memset(s->ptr, 0, size + 2*sizeof(eyecatcherType));// comment by Clark:: 真正的内容加两个眼睛  ::2021-3-25
+	
+	space += size + 2*sizeof(eyecatcherType);		// comment by Clark:: space 不记录 STACK_LEN ???  ::2021-3-25
 
 	// comment by Clark:: 前后一共两个 eyecatcher, 真正的内容用 eyecatcher 包围了  ::2020-12-27
 	*(eyecatcherType*)(s->ptr) = eyecatcher; /* start eyecatcher */
 	*(eyecatcherType*)(((char*)(s->ptr)) + (sizeof(eyecatcherType) + size)) = eyecatcher; /* end eyecatcher */
 	Log(TRACE_MAX, -1, "Allocating %d bytes in heap at file %s line %d ptr %p\n", (int)size, file, line, s->ptr);
-	TreeAdd(&heap, s, space);	
+	TreeAdd(&heap, s, space);	// comment by Clark:: space 大小是 storageElement 这个元素，包括其中的成员变量所占用的空间大小   ::2021-3-25
 	state.current_size += size;	// comment by Clark:: 记录已malloc的空间大小,这个size是真正的信息内容,  同时记录申请过的最大空间大小 max_size   ::2020-12-27
 	if (state.current_size > state.max_size)
 		state.max_size = state.current_size;
@@ -383,6 +388,8 @@ void* Heap_findItem(void* p)
  * Scans the heap and reports any items currently allocated.
  * To be used at shutdown if any heap items have not been freed.
  */
+
+// comment by Clark:: 关机时使用  ::2021-3-25
 static void HeapScan(enum LOG_LEVELS log_level)
 {
 	Node* current = NULL;
@@ -408,6 +415,7 @@ static void HeapScan(enum LOG_LEVELS log_level)
  */
 int Heap_initialize(void)
 {
+	// comment by Clark:: 用申请到的内存指针大小来排序  ::2021-3-25
 	TreeInitializeNoMalloc(&heap, ptrCompare);
 	heap.heap_tracking = 0; /* no recursive heap tracking! */
 	return 0;

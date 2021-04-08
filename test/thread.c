@@ -43,6 +43,7 @@ void usage(void)
 	exit(EXIT_FAILURE);
 }
 
+// comment by Clark:: 初始化变量  ::2021-3-24
 struct Options
 {
 	int verbose;
@@ -55,6 +56,7 @@ struct Options
 	1,
 };
 
+// comment by Clark:: 解析命令行参数  ::2021-3-24
 void getopts(int argc, char** argv)
 {
 	int count = 1;
@@ -107,6 +109,7 @@ void MyLog(int LOGA_level, char* format, ...)
 	gettimeofday(&ts, NULL);
 	timeinfo = localtime(&ts.tv_sec);
 #endif
+	
 	strftime(msg_buf, 80, "%Y%m%d %H%M%S", timeinfo);
 
 #if defined(_WIN32) || defined(_WINDOWS)
@@ -504,12 +507,15 @@ int main(int argc, char** argv)
 	int i;
 
 	xml = fopen("TEST-thread.xml", "w");
+
+	// comment by Clark:: 直接写文件的方式  ::2021-3-24
 	fprintf(xml, "<testsuite name=\"thread\" tests=\"%d\">\n", (int)(ARRAY_SIZE(tests)) - 1);
 
 	getopts(argc, argv);
 
 	for (i = 0; i < options.iterations; ++i)
 	{
+		// comment by Clark:: 当 test_no 为 -1时, 则所有测试项均进行测试  ::2021-3-24
 	 	if (options.test_no == -1)
 		{ /* run all the tests */
 			for (options.test_no = 1; options.test_no < ARRAY_SIZE(tests); ++options.test_no)
@@ -524,6 +530,7 @@ int main(int argc, char** argv)
 				MyLog(LOGA_INFO, "No test number %d", options.test_no);
 			else
 			{
+				// comment by Clark:: 具体指定一个测试项            ::2021-3-24
 				rc = tests[options.test_no](options); /* run just the selected test */
 			}
 		}

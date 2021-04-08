@@ -13,6 +13,8 @@
  * Contributors:
  *    Keith Holman - initial implementation and documentation
  *******************************************************************************/
+// comment by Clark:: SHA-1（英语：Secure Hash Algorithm 1，中文名：安全散列算法1  ::2021-3-27
+// comment by Clark:: SHA-1可以生成一个被称为消息摘要的160位（20字节）散列值，散列值通常的呈现形式为40个十六进制数。  ::2021-3-27
 
 #include "SHA1.h"
 

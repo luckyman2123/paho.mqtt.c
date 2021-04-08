@@ -118,6 +118,7 @@ void MQTTAsync_init_rand(void)
 	srand(now.tv_nsec);
 }
 #else
+// comment by Clark:: #define START_TIME_TYPE struct timeval  ::2021-3-23
 void MQTTAsync_init_rand(void)
 {
 	START_TIME_TYPE now = MQTTTime_start_clock();
@@ -354,7 +355,7 @@ int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const 
 		#endif
 		Log_initialize((Log_nameValue*)MQTTAsync_getVersionInfo());
 		bstate->clients = ListInitialize();		// comment by Clark:: 全局的client列表  ::2020-12-22
-		Socket_outInitialize();
+		Socket_outInitialize();	
 		Socket_setWriteCompleteCallback(MQTTAsync_writeComplete);
 		MQTTAsync_handles = ListInitialize();
 		MQTTAsync_commands = ListInitialize();
@@ -456,6 +457,7 @@ exit:
 }
 
 
+// comment by Clark:: client 初始化时创建调用的函数  ::2021-3-23
 int MQTTAsync_create(MQTTAsync* handle, const char* serverURI, const char* clientId,
 		int persistence_type, void* persistence_context)
 {
@@ -643,7 +645,7 @@ int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options)
 	}
 	if (receiveThread_state != STARTING && receiveThread_state != RUNNING)
 	{
-		receiveThread_state = STARTING;
+		receiveThread_state = STARTING;		// comment by Clark:: 设置启动  ::2021-3-23
 		Thread_start(MQTTAsync_receiveThread, handle);		// comment by Clark:: 创建接收线程        ::2020-12-22
 	}
 	if (locked)

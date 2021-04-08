@@ -210,7 +210,7 @@ void TreeBalanceAfterAdd(Tree* aTree, Node* curnode, int index)
 void* TreeAddByIndex(Tree* aTree, void* content, size_t size, int index)
 {
 	Node* curparent = NULL;
-	Node* curnode = aTree->index[index].root;
+	Node* curnode = aTree->index[index].root;		// comment by Clark:: index 最大值为1，只有两个 index: 0,1  ::2021-3-25
 	Node* newel = NULL;
 	int left = 0;
 	int result = 1;
@@ -218,14 +218,15 @@ void* TreeAddByIndex(Tree* aTree, void* content, size_t size, int index)
 
 	while (curnode)
 	{
+		// comment by Clark:: curnode->context > content 返回 -1, 相等返回0,  小于返回1  ::2021-3-25
 		result = aTree->index[index].compare(curnode->content, content, 1);
-		left = (result > 0);
-		if (result == 0)
+		left = (result > 0);// comment by Clark:: 当 result > 0时，则 left = 1; 当 result < 0时，则 left = 0  ::2021-3-25
+		if (result == 0)		// comment by Clark::  result 不为0 时，则树一直在遍历 ::2021-3-25
 			break;
-		else
+		else		
 		{
 			curparent = curnode;
-			curnode = curnode->child[left];
+			curnode = curnode->child[left];		// comment by Clark:: left 取值为0或1  ::2021-3-25
 		}
 	}
 	
@@ -255,16 +256,16 @@ void* TreeAddByIndex(Tree* aTree, void* content, size_t size, int index)
 		else
 			aTree->index[index].root = newel;
 		newel->parent = curparent;
-		newel->red = 1;
+		newel->red = 1;				// comment by Clark:: 红节点  ???::2021-3-25
 		if (index == 0)
 		{
-			++(aTree->count);
-			aTree->size += size;
+			++(aTree->count);		// comment by Clark:: item个数增1    ::2021-3-25
+			aTree->size += size;	// comment by Clark:: 大小增加  ::2021-3-25
 		}
 	}
 	newel->content = content;
-	newel->size = size;
-	rc = newel->content;
+	newel->size = size;		// comment by Clark:: 大小  ::2021-3-25
+	rc = newel->content;	// comment by Clark:: 返回内容  ::2021-3-25
 	TreeBalanceAfterAdd(aTree, newel, index);
 exit:
 	return rc;
@@ -531,7 +532,7 @@ void* TreeRemoveKey(Tree* aTree, void* key)
 	return TreeRemoveKeyIndex(aTree, key, 0);
 }
 
-
+// comment by Clark:: int 型 比较  ::2021-3-25
 int TreeIntCompare(void* a, void* b, int content)
 {
 	int i = *((int*)a);
@@ -541,13 +542,13 @@ int TreeIntCompare(void* a, void* b, int content)
 	return (i > j) ? -1 : (i == j) ? 0 : 1;
 }
 
-
+// comment by Clark:: 指针型 比较  ::2021-3-25
 int TreePtrCompare(void* a, void* b, int content)
 {
 	return (a > b) ? -1 : (a == b) ? 0 : 1;
 }
 
-
+// comment by Clark:: 字符串型 比较  ::2021-3-25
 int TreeStringCompare(void* a, void* b, int content)
 {
 	return strcmp((char*)a, (char*)b);

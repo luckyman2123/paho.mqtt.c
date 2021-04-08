@@ -1142,7 +1142,7 @@ static void MQTTAsync_freeCommand(MQTTAsync_queuedCommand *command)
 	free(command);
 }
 
-
+// comment by Clark:: 写完成的回调函数  ::2021-3-23
 void MQTTAsync_writeComplete(int socket, int rc)
 {
 	ListElement* found = NULL;
@@ -1427,6 +1427,7 @@ static int MQTTAsync_processCommand(void)
 		MQTTSubscribe_options* subopts = NULL;
 		int i;
 
+		// comment by Clark:: 命令的细节, 订阅, 同时订阅多个主题  ::2021-3-23
 		for (i = 0; i < command->command.details.sub.count; i++)
 		{
 			ListAppend(topics, command->command.details.sub.topics[i], strlen(command->command.details.sub.topics[i]));
@@ -1843,6 +1844,7 @@ thread_return_type WINAPI MQTTAsync_sendThread(void* n)
 
 		while (MQTTAsync_commands->count > 0)
 		{
+			// comment by Clark:: 处理消息      ::2021-3-24
 			if (MQTTAsync_processCommand() == 0)
 				break;  /* no commands were processed, so go into a wait */
 		}
@@ -2093,6 +2095,7 @@ thread_return_type WINAPI MQTTAsync_receiveThread(void* n)
 				if (strlen(qe->topicName) == topicLen)
 					topicLen = 0;
 
+				// comment by Clark:: 分发消息      ::2021-3-23
 				if (MQTTAsync_deliverMessage(m, qe->topicName, topicLen, qe->msg))
 				{
 #if !defined(NO_PERSISTENCE)
@@ -2732,7 +2735,9 @@ static void MQTTAsync_retry(void)
 	START_TIME_TYPE now;
 
 	FUNC_ENTRY;
+	// comment by Clark:: 时间  ::2021-3-23
 	now = MQTTTime_now();
+	// comment by Clark:: 检验时间  ::2021-3-23
 	if (MQTTTime_difftime(now, last) >= (DIFF_TIME_TYPE)(retryLoopIntervalms))
 	{
 		last = MQTTTime_now();
@@ -2936,7 +2941,7 @@ exit:
 	return rc;
 }
 
-
+// comment by Clark:: 在接收线程中调用  ::2021-3-24
 static MQTTPacket* MQTTAsync_cycle(int* sock, unsigned long timeout, int* rc)
 {
 	struct timeval tp = {0L, 0L};
@@ -2955,6 +2960,7 @@ static MQTTPacket* MQTTAsync_cycle(int* sock, unsigned long timeout, int* rc)
 	{
 #endif
 		/* 0 from getReadySocket indicates no work to do, rc -1 == error */
+		// comment by Clark:: 等待 socket 是否准备好  ::2021-3-24
 		*sock = Socket_getReadySocket(0, &tp,socket_mutex, &rc1);
 		*rc = rc1;
 		if (!MQTTAsync_tostop && *sock == 0 && (tp.tv_sec > 0L || tp.tv_usec > 0L))

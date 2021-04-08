@@ -93,6 +93,8 @@
 /*
  * Network write buffers for an MQTT packet
  */
+
+// comment by Clark:: 多个缓冲区的组合 ::2021-3-23
 typedef struct
 {
 	int count;         /**> number of buffers/buflens/frees */

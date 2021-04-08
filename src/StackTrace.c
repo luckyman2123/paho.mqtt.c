@@ -45,16 +45,16 @@ BE*/
 
 typedef struct
 {
-	thread_id_type threadid;
-	char name[MAX_FUNCTION_NAME_LENGTH];
-	int line;
+	thread_id_type threadid;					// comment by Clark:: çº¿ç¨‹id    ::2021-3-25
+	char name[MAX_FUNCTION_NAME_LENGTH];		// comment by Clark:: å‡½æ•°å  ::2021-3-25
+	int line;									// comment by Clark:: è¡Œå·      ::2021-3-25
 } stackEntry;
 
 typedef struct
 {
-	thread_id_type id;
-	int maxdepth;
-	int current_depth;			// comment by Clark:: Í¬Ò»¸öÏß³Ìµ÷ÓÃµÄÉî¶È         ::2020-12-26
+	thread_id_type id;			// comment by Clark:: çº¿ç¨‹idå·               ::2021-3-25
+	int maxdepth;				// comment by Clark:: è¾¾åˆ°è¿‡æœ€å¤§çš„æ·±åº¦             ::2021-3-25
+	int current_depth;			// comment by Clark:: åŒä¸€ä¸ªçº¿ç¨‹è°ƒç”¨çš„æ·±åº¦           ::2020-12-26
 	stackEntry callstack[MAX_STACK_DEPTH];
 } threadEntry;
 
@@ -63,7 +63,7 @@ typedef struct
 #if !defined(NOSTACKTRACE)
 
 static int thread_count = 0;
-static threadEntry threads[MAX_THREADS];
+static threadEntry threads[MAX_THREADS];		// comment by Clark:: æœ€å¤šæ”¯æŒæŸ¥å¯»255ä¸ªçº¿ç¨‹    ::2021-3-25
 static threadEntry *my_thread = NULL;
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -83,16 +83,16 @@ int setStack(int create)
 	thread_id_type curid = Thread_getid();
 
 	my_thread = NULL;
-	for (i = 0; i < MAX_THREADS && i < thread_count; ++i)   // comment by Clark:: µ±Ç°ÓĞ¶àÉÙÏß³Ì  ::2020-12-26
+	for (i = 0; i < MAX_THREADS && i < thread_count; ++i)   // comment by Clark:: å½“å‰æœ‰å¤šå°‘çº¿ç¨‹  ::2020-12-26
 	{
-		if (threads[i].id == curid)								// comment by Clark::  ´æÔÚµÄ»°£¬¾Í´ÓÊı×éÖĞÒÔ³öµ±Ç°Ïß³ÌµÄÏà¹Ø´òÓ¡ĞÅÏ¢                         ::2020-12-26
+		if (threads[i].id == curid)								// comment by Clark::  å­˜åœ¨çš„è¯ï¼Œå°±ä»æ•°ç»„ä¸­ä»¥å‡ºå½“å‰çº¿ç¨‹çš„ç›¸å…³æ‰“å°ä¿¡æ¯                         ::2020-12-26
 		{
 			my_thread = &threads[i];
 			break;
 		}
 	}
 
-	if (my_thread == NULL && create && thread_count < MAX_THREADS)			// comment by Clark:: ÈôÃ»ÓĞÇÒÖ¸¶¨´´½¨, ÔòÕ¼ÓÃÒ»¸ö, ²¢³õÊ¼»¯×ÔÉí   ::2020-12-26
+	if (my_thread == NULL && create && thread_count < MAX_THREADS)			// comment by Clark:: è‹¥æ²¡æœ‰ä¸”æŒ‡å®šåˆ›å»º, åˆ™å ç”¨ä¸€ä¸ª, å¹¶åˆå§‹åŒ–è‡ªèº«   ::2020-12-26
 	{
 		my_thread = &threads[thread_count];
 		my_thread->id = curid;
@@ -106,23 +106,23 @@ int setStack(int create)
 void StackTrace_entry(const char* name, int line, enum LOG_LEVELS trace_level)
 {
 	Thread_lock_mutex(stack_mutex);
-	if (!setStack(1))
+	if (!setStack(1))			// comment by Clark:: ä¼šä½¿ç”¨åˆ° my_thread å…¨å±€å˜é‡         ::2021-3-25
 		goto exit;
-	if (trace_level != -1)// comment by Clark:: Õâ¸öÊÇÊµÊ±´òÓ¡µÄ  ::2020-12-26
+	if (trace_level != -1)// comment by Clark:: è¿™ä¸ªæ˜¯å®æ—¶æ‰“å°çš„  ::2020-12-26
 		Log_stackTrace(trace_level, 9, (int)my_thread->id, my_thread->current_depth, name, line, NULL);
 
-	// comment by Clark:: Õâ¸öÊÇ±¸·İ, Îª»ØËİ×ö×¼±¸µÄ  ::2020-12-26
+	// comment by Clark:: è¿™ä¸ªæ˜¯å¤‡ä»½, ä¸ºå›æº¯åšå‡†å¤‡çš„  ::2020-12-26
 	strncpy(my_thread->callstack[my_thread->current_depth].name, name, sizeof(my_thread->callstack[0].name)-1);
 	my_thread->callstack[(my_thread->current_depth)++].line = line;
-	if (my_thread->current_depth > my_thread->maxdepth)			// comment by Clark:: Ò»¸öÏß³Ìµ±Ç°µÄ´òÓ¡Éî¶È, ³¬¹ıÒÔÍùµÄ´òÓ¡×îÉî¶È, ÔòÖØĞÂË¢ĞÂ ´ïµ½¹ıµÄmaxdepth  ::2020-12-26
+	if (my_thread->current_depth > my_thread->maxdepth)			// comment by Clark:: ä¸€ä¸ªçº¿ç¨‹å½“å‰çš„æ‰“å°æ·±åº¦, è¶…è¿‡ä»¥å¾€çš„æ‰“å°æœ€æ·±åº¦, åˆ™é‡æ–°åˆ·æ–° è¾¾åˆ°è¿‡çš„maxdepth  ::2020-12-26
 		my_thread->maxdepth = my_thread->current_depth;
-	if (my_thread->current_depth >= MAX_STACK_DEPTH)			// comment by Clark:: µ±Ïß³Ì´ïµ½µÄ×îÉî¶È³¬¹ıÁË×î´óµÄÉî¶ÈÊ±£¬Ôò±¨´í  ::2020-12-26
+	if (my_thread->current_depth >= MAX_STACK_DEPTH)			// comment by Clark:: å½“çº¿ç¨‹è¾¾åˆ°çš„æœ€æ·±åº¦è¶…è¿‡äº†æœ€å¤§çš„æ·±åº¦æ—¶ï¼Œåˆ™æŠ¥é”™  ::2020-12-26
 		Log(LOG_FATAL, -1, "Max stack depth exceeded");
 exit:
 	Thread_unlock_mutex(stack_mutex);
 }
 
-
+// comment by Clark:: é€€å‡ºå‡½æ•°, éœ€è¦åŒ¹é…åç§°, å¦‚æœåç§°ä¸åŒ¹é…, åˆ™æŠ¥é”™  ::2021-3-25
 void StackTrace_exit(const char* name, int line, void* rc, enum LOG_LEVELS trace_level)
 {
 	Thread_lock_mutex(stack_mutex);
@@ -130,7 +130,7 @@ void StackTrace_exit(const char* name, int line, void* rc, enum LOG_LEVELS trace
 		goto exit;
 	if (--(my_thread->current_depth) < 0)
 		Log(LOG_FATAL, -1, "Minimum stack depth exceeded for thread %lu", my_thread->id);
-	// comment by Clark:: Í¬Ò»¸öº¯ÊıÓĞ½ø¾Í»áÓĞ³ö, ËùÒÔ entry Óë exit Òª³É¶ÔÊ¹ÓÃ   ::2020-12-26
+	// comment by Clark:: åŒä¸€ä¸ªå‡½æ•°æœ‰è¿›å°±ä¼šæœ‰å‡º, æ‰€ä»¥ entry ä¸ exit è¦æˆå¯¹ä½¿ç”¨   ::2020-12-26
 	if (strncmp(my_thread->callstack[my_thread->current_depth].name, name, sizeof(my_thread->callstack[0].name)-1) != 0)  
 		Log(LOG_FATAL, -1, "Stack mismatch. Entry:%s Exit:%s\n", my_thread->callstack[my_thread->current_depth].name, name);
 	if (trace_level != -1)
@@ -144,7 +144,7 @@ exit:
 	Thread_unlock_mutex(stack_mutex);
 }
 
-// comment by Clark:: ´òÓ¡ËùÓĞÏß³ÌµÄËùÓĞ»ØËİ  ::2020-12-26
+// comment by Clark:: æ‰“å°æ‰€æœ‰çº¿ç¨‹çš„æ‰€æœ‰å›æº¯  ::2020-12-26
 void StackTrace_printStack(FILE* dest)
 {
 	FILE* file = stdout;
@@ -156,6 +156,7 @@ void StackTrace_printStack(FILE* dest)
 	{
 		threadEntry *cur_thread = &threads[t];
 
+		// comment by Clark:: id å¤§äº0, ä»£è¡¨ä½¿ç”¨è¿‡  ::2021-3-25
 		if (cur_thread->id > 0)
 		{
 			int i = cur_thread->current_depth - 1;

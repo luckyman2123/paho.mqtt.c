@@ -257,6 +257,7 @@ static struct frameData WebSocket_buildFrame(networkHandles* net, int opcode, in
 		ws_header_size = WebSocket_calculateFrameHeaderSize(net, mask_data, data_len);
 		if (*pbuf0)
 		{
+			// comment by Clark:: 头部数据的长度         ::2021-3-23
 			rc.wsbuf0len = *pbuf0len + ws_header_size;
 			rc.wsbuf0 = malloc(rc.wsbuf0len);
 			if (rc.wsbuf0 == NULL)
@@ -946,6 +947,8 @@ int WebSocket_putdatas(networkHandles* net, char** buf0, size_t* buf0len, Packet
 	{
 		struct frameData wsdata;
 
+		// comment by Clark:: 数组组包, 内部应该是按照 mqtt 协议来组包  ::2021-3-23
+		// comment by Clark:: 如果是 websocket 方式发送数据, 头部需要进一步处理 ::2021-3-23
 		wsdata = WebSocket_buildFrame(net, WebSocket_OP_BINARY, mask_data, buf0, buf0len, bufs);
 
 #if defined(OPENSSL)
